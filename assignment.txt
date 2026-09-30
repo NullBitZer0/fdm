@@ -1,0 +1,41 @@
+Stage 6 – Model Development
+Students must develop and compare multiple suitable machine learning models rather than relying on a single
+algorithm.
+• Implement at least FOUR suitable machine learning algorithms.
+• Select algorithms appropriate to the problem and dataset.
+• Use an appropriate validation strategy.
+• Evaluate models using suitable performance metrics.
+• Compare model performance systematically.
+• Record experiments, results, and important observations.
+• Develop the understanding why certain models perform better or worse.
+Stage 7 – Model Optimization and Final Model Selection
+• Perform hyperparameter tuning for suitable models.
+• Use an appropriate optimization/search strategy.
+• Investigate whether feature selection/engineering or other modelling choices improve performance.
+• Compare tuned models with baseline models.
+• Select the final model.
+• Clearly justify the final model selection.
+Stage 8 – Progress Evaluation 2 (30%)
+This is an individual evaluation focused on the modelling and optimization stages.
+• Algorithm selection and justification, Model comparison and evaluation metrics, Validation strategy,
+Hyperparameter tuning, Optimization decisions, Interpretation of results, Final model selection and
+justification, Ability to explain the student's own contribution and technical decisions, etc.
+Evaluation Dates:[30th September, 3rd and 4th October ], For KandyUni and Northern Uni Students the dates will be
+informed via the staff members.
+Stage 9 – Backend Development
+The final trained model must be integrated into a functional backend/service that can receive user inputs and
+return predictions.
+• Load the final trained model and required preprocessing pipeline.
+• Accept and validate user inputs.
+• Apply the same preprocessing used during model development.
+• Generate predictions using the final model.
+• Return clear and meaningful prediction results.
+• Handle invalid or missing inputs appropriately.
+Stage 10 – Frontend Development and User Experience
+Develop a user-friendly frontend that allows the intended user to interact with the prediction system.
+• Provide clear input fields and instructions.
+• Validate user inputs. 
+• Present prediction results clearly.
+• Follow the requirements of the assigned scenario.
+• Provide a simple and understandable user experience.
+• Ensure the frontend and backend work together as an end-to-end system. 

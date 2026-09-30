@@ -1,0 +1,5 @@
+model,pr_auc,roc_auc,threshold,precision,recall,f1,tp,fp,fn,tn,flagged,seconds
+LightGBM + Class Weight,0.7504,0.9222,0.5664,0.7805,0.7442,0.7619,32,9,11,7728,41,20.5
+XGBoost + Class Weight,0.7395,0.9896,0.9462,0.8235,0.6512,0.7273,28,6,15,7731,34,70.1
+Random Forest + Undersampling,0.5673,0.9781,0.7357,0.7333,0.5116,0.6027,22,8,21,7729,30,1.3
+Logistic Regression + SMOTE,0.197,0.9486,0.9554,0.3134,0.4884,0.3818,21,46,22,7691,67,10.3

@@ -1,0 +1,4 @@
+model,pr_auc,roc_auc,threshold,precision,recall,f1,tp,fp,fn,tn,flagged,seconds,voting
+"Majority vote (soft, PR-AUC weighted)",0.7515,0.9821,0.5533,0.7895,0.6977,0.7407,30,8,13,7729,38,0.0,soft_weighted
+"Majority vote (soft, mean probability)",0.7484,0.9819,0.5645,0.7895,0.6977,0.7407,30,8,13,7729,38,0.0,soft
+"Majority vote (hard, 2 of 3)",0.5158,0.8136,1.0,0.8182,0.6279,0.7105,27,6,16,7731,33,0.0,hard

@@ -1,0 +1,21 @@
+# data (large, re-downloadable from Kaggle)
+data/raw/*.csv
+
+# CatBoost was removed from the project; ignore stragglers
+catboost_info/
+
+# serving artifacts: regenerate with scripts/train_models.py + tune_models.py
+artifacts/*.joblib
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# notebook
+.ipynb_checkpoints/
+
+# frontend
+frontend/node_modules/
+frontend/dist/

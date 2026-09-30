@@ -1,0 +1,2 @@
+model,pr_auc,roc_auc,threshold,precision,recall,f1,tp,fp,fn,tn,flagged,seconds,baseline_pr_auc,gain
+xgboost (tuned),0.6695,0.954,0.9634,1.0,0.6,0.75,15,0,10,5162,15,97.8,0.9097,-0.2402

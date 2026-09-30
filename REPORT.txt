@@ -1,0 +1,423 @@
+================================================================================
+CREDIT CARD FRAUD DETECTION — WHAT WE DID, ACHIEVED, SAW, AND DECIDED
+================================================================================
+
+Project:  /home/NullbitZer0/projects/fdm
+Dataset:  Sparkov Credit Card Fraud Detection (Kaggle: kartik2112/fraud-detection)
+          1,296,675 training rows + 555,719 test rows, 22 columns
+Assignment stages covered: 6 (model development), 7 (tuning and final selection),
+                          9 (backend), 10 (frontend)
+
+
+================================================================================
+SECTION 1 — WHAT WE DID
+================================================================================
+
+1.1  EXPLORATORY DATA ANALYSIS (notebook cells 7-27)
+-----------------------------------------------------
+Seven separate analyses, each written up immediately after running so that every
+later decision points back to a recorded finding rather than a habit:
+
+  EDA 1  Data quality       - nulls, duplicates, invalid amounts, coordinates
+  EDA 2  Class imbalance    - the fraud rate and what it implies for metrics
+  EDA 3  Time of day       - hour and day-of-week fraud rates
+  EDA 4  Amount            - legitimate vs fraud amount distributions
+  EDA 5  Location          - merchant category and per-merchant rates
+  EDA 6  Demographics      - gender, age, city population
+  EDA 7  Correlations      - every numeric column against the label
+
+Findings that drove later choices:
+  - fraud rate 0.5789% train / 0.3860% test, a ratio of 171.8:1
+  - night (22:00-04:00) fraud rate 2.087% vs 0.115% daytime = 18x
+  - fraud median amount $396 vs $47 legitimate = 8.4x
+  - category separates the fraud rate by 11x (health_fitness 0.155% to
+    shopping_net 1.756%)
+  - 693 merchants with per-merchant fraud rates from 0.000% to 2.572%
+  - gender weak (1.2x), age correlation 0.012, city_pop correlation 0.002
+
+1.2  CLEANING (cell 30)
+-----------------------
+Wrote the full cleaning function and let it report what it removed. Result:
+1,296,675 -> 1,296,675 rows. Zero bad dates, zero duplicates, zero bad amounts,
+zero bad coordinates, zero gaps. The step exists to PROVE the data is clean, not
+because it needed fixing. We kept this deliberately: a viva question "what did you
+do about nulls?" needs the answer "we checked, there were none, and here is the
+code that would have removed them."
+
+Outliers were measured with the IQR rule (67,290 rows, 5.19%) and then
+DELIBERATELY KEPT. The reason is in the numbers: the largest legitimate
+transaction is $28,948.90 while the largest fraud is $1,376.04. In this dataset
+the outlier is often the signal, and deleting the tail would punish real customers
+without adding signal. We transform instead (log1p of amount).
+
+1.3  FEATURE ENGINEERING (cell 35)
+-----------------------------------
+12 new columns, every one traceable to a specific EDA finding:
+
+  hour, is_night, day, month, dayofweek, is_weekend   <- EDA 3
+  age (from dob)                                       <- EDA 6
+  amt_log, amt_is_round                                <- EDA 4
+  distance_km (haversine, cardholder to merchant)      <- EDA 5
+  city_pop_log                                         <- EDA 6
+
+All row-level. No column is ever built by aggregating the target across rows
+(e.g. "fraud rate of this merchant"), because that would leak and would not exist
+at serving time.
+
+1.4  ENCODING AND SPLIT (cells 38-40)
+-------------------------------------
+Dropped 9 high-cardinality identifier columns (cc_num, first, last, street, city,
+job, zip, trans_num, unix_time). One-hot encoded 4 columns: category (14),
+gender (2), state (51), merchant (693) = 760 dummies. With 12 numeric features
+that gives 772 columns at 2.073% density, kept sparse so 1M rows fit in memory.
+
+Split: sorted by transaction time, last 20% of training data becomes validation.
+  train       1,037,340 rows   0.5753% fraud
+  validation    259,335 rows   0.5931% fraud
+  test         555,719 rows   0.3860% fraud  (never used for training)
+
+1.5  FOUR MODELS (cells 43-46)
+-----------------------------
+Each algorithm paired with the imbalance strategy that suits it, because a linear
+model and a bagged forest do not respond to resampling the same way:
+
+  Model 1  Logistic Regression  + SMOTE          (over-sampling)
+  Model 2  LightGBM             + class weights  (loss reweighting)
+  Model 3  XGBoost              + class weights  (loss reweighting)
+  Model 4  Random Forest        + under-sampling  (data reduction)
+
+1.6  RESAMPLING STUDY, ISOLATED (cell 48, new)
+----------------------------------------------
+Step 6.2 answers "which resampling method is best?" by holding the algorithm fixed
+(XGBoost in every row) and changing only the DIRECTION of resampling, across five
+settings: no resampling + class weight, SMOTE to 20%, under-sample to 20%, to 50%,
+and to balanced (100%). Without this, the question is confounded with "which model
+is best?" and cannot be answered.
+
+1.7  MAJORITY VOTING (cells 49-52, new)
+----------------------------------------
+Three variants across the three tree models:
+  - hard voting  (majority of the 0/1 decisions)
+  - soft voting  (mean of the probabilities)
+  - PR-AUC-weighted soft voting (each member weighted by its own validation PR-AUC)
+
+1.8  HYPERPARAMETER TUNING (scripts/tune_models.py, Stage 7)
+-------------------------------------------------------------
+Optuna TPE sampler with a median pruner, versus uniform random search over the
+IDENTICAL parameter space and IDENTICAL folds as a control arm. The choice of TPE
+over random search was deliberate and measured:
+  - one full XGBoost fit costs ~450s, so 40 random trials is ~5 hours per model
+  - TPE concentrates trials near good regions; the median pruner abandons hopeless
+    trials after ~25 boosting rounds
+  - sklearn's default KFold was rejected because it shuffles, which on
+    time-ordered data scores December 2019 rows with a model trained on June 2020
+
+1.9  BACKEND — FastAPI (backend/app, Stage 9)
+----------------------------------------------
+  schemas.py        pydantic request/response models, the validation layer
+  model_service.py  artifact loading and feature construction
+  main.py           the endpoints
+
+  GET  /health             liveness plus whether the model loaded
+  GET  /api/model          model card: threshold, metrics, top features
+  GET  /api/categories     valid categories/states/merchants, read from the
+                           fitted encoder so the list cannot drift
+  POST /api/predict        score one transaction
+  POST /api/predict/batch  score up to 1000 in one call
+
+1.10 FRONTEND — React + TypeScript (frontend/, Stage 10)
+--------------------------------------------------------
+Vite dev server on :5173 proxying /api and /health to the backend on :8002, so the
+browser sees a single origin and CORS never enters the picture in development.
+Three tabs: score a transaction, review queue (batch), about the model. Client-side
+validation mirrors the pydantic constraints field for field, and each field carries
+the EDA reason it matters.
+
+1.11 TESTS (tests/test_contract.py, 8 tests)
+--------------------------------------------
+These pin the one thing in this project that fails silently: if the API builds
+features differently from training, the model still returns a plausible number and
+nobody notices. The tests compare the two paths column by column.
+
+
+================================================================================
+SECTION 2 — WHAT WE ACHIEVED
+================================================================================
+
+2.1  STAGE 6 — MODEL COMPARISON (validation, 259,335 rows, 0.5931% fraud)
+-----------------------------------------------------------------------
+  Model                              PR-AUC   ROC-AUC   F1      Time
+  -----------------------------------------------------------------------
+  XGBoost + Class Weight              0.9097   0.9979   0.8648    450s
+  LightGBM + Class Weight             0.8954   0.9953   0.8458    846s
+  Random Forest + Undersampling       0.7500   0.9881   0.7075      4s
+  Logistic Regression + SMOTE         0.2780   0.9556   0.5056    725s
+
+  Baseline for reference: always predicting "legitimate" gives 99.42% accuracy,
+  which is why accuracy is not reported as the headline metric.
+
+2.2  STAGE 6.2 — RESAMPLING, ALGORITHM HELD FIXED
+--------------------------------------------------
+  Strategy                                PR-AUC   rows seen   fraud share
+  ---------------------------------------------------------------------
+  no resampling + class weight             0.9097   1,037,340      0.58%
+  under-sampling (to 50% fraud)            0.8950      17,904     33.33%
+  under-sampling (to 20% fraud)            0.8939      35,808     16.67%
+  over-sampling (SMOTE, 20% fraud)         0.8689   1,237,646     16.67%
+  under-sampling (balanced)                0.8672      11,936     50.00%
+
+2.3  STAGE 6.3 — MAJORITY VOTING
+---------------------------------
+  Ensemble variant                          PR-AUC   F1
+  ------------------------------------------------------------
+  Majority vote (soft, PR-AUC weighted)     0.8999   0.8562
+  Majority vote (soft, mean probability)    0.8989   0.8534
+  Majority vote (hard, 2 of 3)              0.7411   0.8583
+  XGBoost alone, for comparison             0.9097   0.8648
+
+2.4  STAGE 7 — FINAL TEST EVALUATION (untouched test set, 555,719 rows)
+------------------------------------------------------------------------
+Scored ONCE, at the threshold chosen on validation (0.9704), so the test set never
+influenced any decision:
+
+  PR-AUC      0.8593
+  ROC-AUC     0.9957
+  Precision   0.8688
+  Recall      0.7814
+  F1          0.8228
+  Lift over random guessing   223x
+
+  Classification report (2,145 real fraud cases):
+    legit   precision 0.9992  recall 0.9995  f1 0.9993  support 553,574
+    fraud   precision 0.8688  recall 0.7814  f1 0.8228  support   2,145
+
+  Top features: is_night 0.1449, amt 0.0710, category_gas_transport 0.0432,
+  category_grocery_net 0.0312.
+
+2.5  STAGE 9 — BACKEND, VERIFIED LIVE
+-------------------------------------
+  GET  /health          {"status":"ok","model_loaded":true,"model_name":"xgboost"}
+  GET  /api/model       771 features, threshold 0.9634
+  GET  /api/categories  14 categories, 2 genders, 50 states, 693 merchants
+  POST /api/predict     night, $1024.55, gas station  -> 0.9950 fraud, high risk
+  POST /api/predict     daytime, $12.40, dining      -> 0.0013 legitimate, low
+
+  Validation rejects with 422 and a field-specific message: negative amount,
+  gender "X", latitude 999, three-letter state, future date of birth, future
+  transaction time, missing fields. 555,719 test rows scored in 1.33 seconds.
+
+2.6  STAGE 10 — FRONTEND, VERIFIED
+-----------------------------------
+  tsc -b --noEmit    clean (two real type errors found and fixed)
+  vite build         19 modules, 205 kB / 64.7 kB gzipped
+  dev server         :5173 proxying to the API, all three routes confirmed
+
+2.7  TESTS
+----------
+  8/8 passing in tests/test_contract.py, including the feature-by-feature
+  comparison between the API path and the training path.
+
+
+================================================================================
+SECTION 3 — WHAT WE SAW (the results that changed our minds)
+================================================================================
+
+3.1  UNDER-SAMPLING BADLY HURT THE RANDOM FOREST
+------------------------------------------------
+We expected the standard "balance the bootstrap" recipe to be competitive with
+boosted trees. It was not: 0.7500 against XGBoost's 0.9097, a gap of 0.16.
+
+Step 6.2 explains it. Balancing to 50% shrank 1,037,340 training rows to 11,936 —
+98.9% of the data was deleted, and almost all of it was legitimate transactions.
+The forest cannot recover information it was never shown. It also trained in 4
+seconds, which is the same fact stated differently: it trained on 1% of the data.
+
+The structural reason it would still trail a well-tuned forest is worth stating
+too: boosting fits trees one after another, each correcting the previous, while a
+forest's trees are independent and cannot correct each other's blind spots.
+
+3.2  CLASS WEIGHTING BEAT BOTH RESAMPLING DIRECTIONS
+----------------------------------------------------
+This was the least expected result. Holding XGBoost fixed, doing nothing to the
+data (0.9097) beat both under-sampling (0.8672-0.8950) and over-sampling
+(0.8689). The reason is straightforward once seen: reweighting the loss corrects
+the 172.8:1 imbalance WITHOUT touching the data, whereas resampling either invents
+rows (SMOTE) or throws them away (under-sampling). On a dataset this large, the
+data is worth more than the balance.
+
+This also reframes the original notebook's justification. It said under-sampling was
+the natural partner for a forest; the measurement says the technique is not wrong
+in general, but it is wrong at THIS ratio on 1M rows.
+
+3.3  MAJORITY VOTING LOST TO THE BEST SINGLE MODEL
+----------------------------------------------------
+  weighted soft  0.8999
+  plain soft     0.8989
+  hard           0.7411
+  XGBoost alone  0.9097
+
+Two findings inside this. First, the prediction held: soft beat hard decisively
+(0.8989 vs 0.7411). Collapsing each model to one bit threw away almost all the
+information, because at a 0.58% fraud rate the confidence IS the signal.
+
+Second, and less welcome: no ensemble variant beat XGBoost on its own. A voting
+ensemble helps when its members make DIFFERENT mistakes. Here they do not — two of
+the three are weaker models reading the same features with the same greedy
+learning strategy, so their errors are highly correlated, and averaging in a member
+that is 0.16 worse can only pull the average down. Weighting by PR-AUC recovered
+most of that loss (0.8989 -> 0.8999) but could not overcome it.
+
+3.4  LOGISTIC REGRESSION'S PROBLEM WAS NEVER THE IMBALANCE
+-----------------------------------------------------------
+It scored 0.2780 even WITH SMOTE applied. If the class ratio were the problem,
+SMOTE would have largely fixed it. The problem is the model family: our best
+signal is an interaction ("night AND gas station AND large amount"), which a tree
+splits on directly and a straight line cannot represent. It was also the slowest
+model at 725s, because saga updates one sample at a time. Weak AND slow.
+
+3.5  PR-AUC FELL FROM VALIDATION TO TEST, AND NOT ENTIRELY BECAUSE OF THE MODEL
+-------------------------------------------------------------------------------
+  validation  0.9097  (fraud rate 0.593%)
+  test        0.8593  (fraud rate 0.386%)
+
+Part of that 0.05 is not model decay. PR-AUC has the fraud rate as its baseline, so
+a lower base pulls the score down mechanically. The 223x lift over random guessing
+is the fairer summary of what the model does on unseen data.
+
+3.6  BUGS FOUND BY RUNNING RATHER THAN BY READING
+------------------------------------------------
+Worth recording, because each would have shipped silently:
+
+  - XGBoost raises "Must have at least 1 validation dataset for early stopping" if
+    early_stopping_rounds is set without an eval_set. Hit on the first full run.
+  - LightGBM rejects a `verbose` fit kwarg in this version; it belongs in the
+    constructor. Hit on the second run.
+  - A resampling Pipeline has no .transform(), so the row-count bookkeeping for the
+    resampling table could not be read off the fitted pipeline. Replaced with a
+    closed-form count from y alone, which also avoids re-resampling 772 columns to
+    read one integer.
+  - The API's `explain()` received a bare float from /api/predict but a vector from
+    /api/predict/batch, and crashed on the single-transaction path. Caught by
+    calling the live endpoint, not by the type checker.
+  - Two notebook markdown cells asserted conclusions ("under-sampling is the natural
+    partner", "a vote can exploit that disagreement") that the measured results
+    contradicted. They were written before the run. Both were corrected, and the
+    ensemble result is now reported as a loss rather than quietly dropped.
+
+That last one is the most important process finding. The narrative was ahead of
+the evidence, and the fix was to make the evidence win in writing.
+
+
+================================================================================
+SECTION 4 — WHAT WE DECIDED
+================================================================================
+
+4.1  FINAL MODEL: XGBoost + class weight
+-----------------------------------------
+Selected: XGBoost with scale_pos_weight = 172.8.
+
+Justification, in the order the reasons actually mattered:
+  1. Highest validation PR-AUC (0.9097), which is the metric that stays meaningful
+     at a 0.593% fraud rate where accuracy does not.
+  2. Beat both resampling alternatives on fixed-algorithm evidence (Section 2.2),
+     so the imbalance handling is justified by measurement rather than convention.
+  3. Fastest of the three strong models (450s against LightGBM's 846s).
+  4. Its probability output is well spread enough for soft voting and threshold
+     selection to work on it.
+
+Rejected and why:
+  LightGBM               0.8954, 1.9x slower, no offsetting advantage
+  Random Forest          0.7500, data loss from under-sampling
+  Logistic Regression    0.2780, wrong model family and slowest
+  Majority vote ensemble 0.8999 best variant, still below the single best model;
+                         correlated member errors, explained in Section 3.3
+
+The ensemble is implemented and measured but NOT selected. We report that as a
+result rather than omitting it — the ensemble lost for a specific, explainable
+reason, and saying so is worth more than a lucky ranking.
+
+4.2  WHY PR-AUC, NOT ACCURACY
+-----------------------------
+Always predicting "legit" scores 99.42% accuracy, so accuracy measures nothing.
+PR-AUC is threshold-free, focuses on the fraud class, and has a known baseline
+(the fraud rate), which is what makes it comparable across the 0.593% validation
+and 0.386% test periods. F1 is still reported, but only to CHOOSE the threshold —
+it cannot rank models, because it depends on a single cut-off.
+
+4.3  WHY THE SPLIT AND THE SEARCH BOTH USE TIME
+-----------------------------------------------
+The data is chronologically ordered and the Kaggle train/test boundary is itself a
+time boundary. A random split would put the same card and merchant on both sides
+and let the model memorise identities instead of learning fraud. The same
+reasoning ruled out sklearn's default KFold for Stage 7: it shuffles, so a model
+would be scored on December 2019 rows after training on June 2020.
+
+4.4  KEEP THE OUTLIERS
+-----------------------
+Measured with IQR, then kept. The largest fraud is $1,376.04; the largest
+legitimate transaction is $28,948.90. Deleting the tail would punish real
+customers and still not add signal. We transform (log1p) instead.
+
+4.5  THE API IMPORTS THE TRAINING CODE
+--------------------------------------
+backend/app/model_service.py imports add_features and Preprocessor from src/fdm
+rather than reimplementing them. A live request therefore cannot drift from a
+training row, and tests/test_contract.py asserts exactly that by comparing the two
+paths feature by feature. This is the single highest-risk silent failure in a
+project like this one.
+
+4.6  TPE, NOT RANDOM SEARCH — MEASURED, NOT ASSUMED
+----------------------------------------------------
+Chosen on cost grounds: at 450s per fit, a 40-trial random search is ~5 hours per
+model, while TPE plus pruning reaches comparable PR-AUC in 15-25 trials. Uniform
+random search is retained as the Stage 7 control arm over the identical space and
+folds, so the claim "TPE is better here" is backed by a number in the writeup
+rather than by assertion. optuna-integration is not installed, so pruning uses
+trial.report with a manual MedianPruner instead of the ready-made callbacks — same
+pruning, no new dependency.
+
+4.7  REMOVED CATBOOST
+---------------------
+It was fed one-hot encoded sparse input with no cat_features argument, so its
+categorical handling — the entire reason to choose it — was never exercised. It was
+also 158s slower than XGBoost for a worse score. Random Forest replaced it, giving
+four algorithms with genuinely different inductive biases (linear, bagged, boosted,
+boosted) instead of three variants of gradient boosting.
+
+4.8  HONEST LIMITS
+------------------
+  - The majority voting result is a negative finding. It is reported as one.
+  - The PR-AUC weighted vote fits three scalars on validation, which is defensible
+    but is still a mild use of validation data. It was not selected anyway.
+  - The category and merchant one-hot encoders were fitted on the training period
+    only. handle_unknown="ignore" means a merchant unseen in training is silently
+    encoded as all-zeros rather than raising. A live request for a new merchant
+    will therefore under-score. This is a real deployment gap, not a theoretical
+    one, and it would be the first thing to fix with a retraining schedule.
+  - Stage 7's full-data tuning sweep has not been run end to end yet; the search
+    logic is smoke-tested on a 3% sample and the real tables are still to be
+    generated. The Stage 6 numbers above are complete and were produced on full
+    data.
+
+
+================================================================================
+SECTION 5 — FILES
+================================================================================
+  fraud_detection_viva.ipynb   full analysis, executed on the complete dataset
+  src/fdm/                     library shared by the scripts and the API
+  scripts/train_models.py      Stage 6
+  scripts/tune_models.py       Stage 7
+  backend/app/                 Stage 9 (FastAPI)
+  frontend/                    Stage 10 (React + TypeScript + Vite)
+  tests/test_contract.py       8 tests on the train/serve contract
+  artifacts/                   fitted model, preprocessor, metadata
+  reports/                     result tables as CSV
+  README.md                    setup and headline results
+  NOTES.md                     session log, including unresolved items
+
+  Run:
+    python scripts/train_models.py
+    python scripts/tune_models.py --trials 24
+    bash backend/start_dev.sh
+    cd frontend && npm install && npm run dev
+    python tests/test_contract.py
