@@ -1,6 +1,6 @@
 model,pr_auc,roc_auc,threshold,precision,recall,f1,tp,fp,fn,tn,flagged,seconds,strategy,train_rows_seen
-XGBoost over-sampling (SMOTE 20%),0.7426,0.9708,0.9301,0.875,0.6512,0.7467,28,4,15,7733,32,145.0,over-sampling (SMOTE 20%),30985
-XGBoost no resampling + class weight,0.7395,0.9896,0.9462,0.8235,0.6512,0.7273,28,6,15,7731,34,73.9,no resampling + class weight,31120
-XGBoost under-sampling (to 20%),0.627,0.9846,0.9999,0.7857,0.5116,0.6197,22,6,21,7731,28,34.8,under-sampling (to 20%),216
-XGBoost under-sampling (to 50%),0.5681,0.9907,1.0,0.625,0.5814,0.6024,25,15,18,7722,40,83.4,under-sampling (to 50%),270
-XGBoost under-sampling (to 100%),0.4934,0.9855,0.9999,0.6875,0.5116,0.5867,22,10,21,7727,32,49.6,under-sampling (to 100%),360
+XGBoost no resampling + class weight,0.915,0.9979,0.9697,0.9159,0.8147,0.8624,1253,115,285,257682,1368,404.7,no resampling + class weight,1037340
+XGBoost under-sampling (to 20%),0.8924,0.9979,0.9993,0.8819,0.7965,0.837,1225,164,313,257633,1389,903.9,under-sampling (to 20%),7162
+XGBoost under-sampling (to 50%),0.8781,0.9979,0.9998,0.8734,0.7718,0.8195,1187,172,351,257625,1359,921.2,under-sampling (to 50%),8952
+XGBoost over-sampling (SMOTE 20%),0.8715,0.9973,0.9945,0.8695,0.8017,0.8342,1233,185,305,257612,1418,615.6,over-sampling (SMOTE 20%),1032864
+XGBoost under-sampling (to 100%),0.8624,0.9979,0.9999,0.8405,0.7536,0.7947,1159,220,379,257577,1379,597.4,under-sampling (to 100%),11936

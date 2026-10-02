@@ -240,12 +240,30 @@ def main() -> None:
     print(f"winner on validation: {best} (PR-AUC {table.loc[0, 'pr_auc']:.4f}, "
           f"{lift_over_random(dataset.y_valid, probabilities[best]):.0f}x random)")
 
-    banner("saving fitted baseline models for the API")
+    banner("saving fitted models for the API")
     dataset.preprocessor.save(ARTIFACT_DIR / "preprocessor.joblib")
     for name, model in candidates.items():
         joblib.dump(model, ARTIFACT_DIR / f"baseline_{name.split()[0].lower()}.joblib")
-    print(f"wrote preprocessor.joblib and {len(candidates)} baseline models "
-          f"to {ARTIFACT_DIR}")
+
+    # Promote the validation winner to final_model.joblib. The preprocessor and the
+    # model must always be written from the same run: leaving a stale model beside a
+    # refreshed preprocessor is how you get a silent feature-count mismatch at serve
+    # time. This is the last write, so they cannot disagree.
+    winner_model = candidates[best]
+    threshold = float(table.loc[0, "threshold"])
+    joblib.dump({"model": winner_model, "threshold": threshold,
+                 "model_name": best,
+                 "params": winner_model.get_params(),
+                 "encoding_scheme": dataset.preprocessor.scheme,
+                 "n_features": len(dataset.preprocessor.feature_names),
+                 "validation_pr_auc": float(table.loc[0, "pr_auc"]),
+                 "validation_roc_auc": float(table.loc[0, "roc_auc"]),
+                 "n_train_rows": int(len(dataset.y_train))},
+                ARTIFACT_DIR / "final_model.joblib")
+    print(f"wrote preprocessor.joblib, {len(candidates)} baseline models and "
+          f"final_model.joblib ({best}) to {ARTIFACT_DIR}")
+    print(f"  encoding scheme {dataset.preprocessor.scheme}, "
+          f"{len(dataset.preprocessor.feature_names)} features, threshold {threshold}")
 
 
 if __name__ == "__main__":

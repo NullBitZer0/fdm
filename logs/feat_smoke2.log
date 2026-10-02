@@ -1,0 +1,63 @@
+
+==============================================================================
+Feature selection study
+==============================================================================
+train 20,747 rows | validation 5,187 rows | 775 features | imbalance 162.4:1
+
+==============================================================================
+2. Top-k features by XGBoost importance
+==============================================================================
+
+  15 highest-importance features:
+     1. merchant_fraud_Schaefer, Maggio and Daugherty
+     2. amt
+     3. merchant_fraud_Kutch LLC
+     4. is_night
+     5. category_kids_pets
+     6. merchant_fraud_Balistreri-Nader
+     7. merchant_fraud_Reynolds-Schinner
+     8. merchant_fraud_Walter, Hettinger and Kessler
+     9. merchant_fraud_Stiedemann Ltd
+    10. merchant_fraud_Nienow, Ankunding and Collier
+    11. category_freq
+    12. merchant_fraud_Wilkinson PLC
+    13. merchant_fraud_Kertzmann LLC
+    14. merchant_fraud_Hahn, Bahringer and McLaughlin
+    15. merchant_fraud_Murray Ltd
+
+       k    PR-AUC      gain  seconds
+     775    0.7414   +0.0000      333  (all)
+      10    0.4343   -0.3071       64
+      20    0.6676   -0.0738       97
+      30    0.6107   -0.1307      127
+      50    0.7296   -0.0118      238
+      75    0.7462   +0.0048      306
+     100    0.7462   +0.0048      286
+     150    0.7462   +0.0048      274
+     250    0.7462   +0.0048      310
+     400    0.7416   +0.0002      314
+     600    0.7432   +0.0018      246
+
+==============================================================================
+3. Selection
+==============================================================================
+  all 775 features   PR-AUC 0.7414
+  best k = 75             PR-AUC 0.7462  (+0.0048)
+  best trained in 306s against 333s for all features
+
+  k  pr_auc    gain  seconds
+ 10  0.4343 -0.3071     63.8
+ 20  0.6676 -0.0738     97.4
+ 30  0.6107 -0.1307    127.4
+ 50  0.7296 -0.0118    238.2
+ 75  0.7462  0.0048    306.4
+100  0.7462  0.0048    285.7
+150  0.7462  0.0048    274.4
+250  0.7462  0.0048    310.4
+400  0.7416  0.0002    313.9
+600  0.7432  0.0018    246.2
+775  0.7414  0.0000    333.4
+
+DECISION: keep all 775 features. A +0.0048 gain is
+inside run-to-run noise, and dropping features the model does use is not
+worth the risk for nothing.

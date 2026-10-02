@@ -1,0 +1,4 @@
+model,features,pr_auc,roc_auc,precision,recall,f1,seconds
+one-hot only (Step 5),772,0.9097,0.9979,0.9182,0.8173,0.8648,446.8
+one-hot + frequency,776,0.9150,0.9979,0.9159,0.8147,0.8624,408.9
+one-hot + frequency + target,779,0.9079,0.9974,0.9054,0.8153,0.8580,422.1

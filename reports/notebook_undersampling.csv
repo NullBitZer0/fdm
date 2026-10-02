@@ -1,0 +1,6 @@
+model,pr_auc,precision,recall,f1,train_rows_seen,fraud_share,seconds
+no resampling + class weight,0.9150,0.9159,0.8147,0.8624,1037340,0.0058,405.9
+under-sampling (20% fraud),0.8924,0.8819,0.7965,0.8370,35808,0.1667,900.9
+under-sampling (50% fraud),0.8781,0.8734,0.7718,0.8195,17904,0.3333,923.2
+"over-sampling (SMOTE, 20% fraud)",0.8715,0.8695,0.8017,0.8342,1237646,0.1667,605.5
+under-sampling (100% = balanced),0.8624,0.8405,0.7536,0.7947,11936,0.5000,598.9

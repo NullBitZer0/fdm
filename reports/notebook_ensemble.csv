@@ -1,0 +1,4 @@
+model,pr_auc,precision,recall,f1
+"Majority vote (soft, PR-AUC weighted)",0.8980,0.9074,0.8095,0.8557
+"Majority vote (soft, mean probability)",0.8972,0.9109,0.8043,0.8543
+"Majority vote (hard, 2 of 3)",0.7477,0.9178,0.8134,0.8625

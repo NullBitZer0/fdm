@@ -1,0 +1,11 @@
+config,fold,pr_auc,roc_auc,fraud_rate,seconds
+untuned (Stage 6),1,0.86,0.9931,0.0049,37.7
+untuned (Stage 6),2,0.8662,0.9954,0.0048,63.2
+untuned (Stage 6),3,0.8784,0.9965,0.005,71.8
+untuned (Stage 6),4,0.901,0.9968,0.0063,94.7
+untuned (Stage 6),5,0.9079,0.998,0.0057,87.6
+tuned (random search),1,0.8559,0.9937,0.0049,19.3
+tuned (random search),2,0.872,0.9964,0.0048,37.5
+tuned (random search),3,0.8884,0.9977,0.005,83.2
+tuned (random search),4,0.9016,0.9978,0.0063,86.8
+tuned (random search),5,0.9076,0.9985,0.0057,103.6

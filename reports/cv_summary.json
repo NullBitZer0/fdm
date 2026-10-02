@@ -1,0 +1,22 @@
+{
+  "sample_frac": 1.0,
+  "folds": 5,
+  "n_rows": 1296675,
+  "imbalance": 171.8,
+  "mean_pr_auc": {
+    "untuned (Stage 6)": 0.8827,
+    "tuned (random search)": 0.8851
+  },
+  "std_pr_auc": {
+    "untuned (Stage 6)": 0.0211,
+    "tuned (random search)": 0.0213
+  },
+  "mean_difference": 0.0024,
+  "std_difference": 0.0055,
+  "folds_won_by_tuned": 3,
+  "verdict": "tuning does not measurably help (difference within one standard error of zero; sign flips between the 30% and 100% runs)",
+  "standard_error": 0.0025,
+  "t_statistic": 0.98,
+  "significant_at_p05": false,
+  "note": "The verdict field previously said \"tuning helps\" because it thresholded the mean difference at 0.002 and ignored the spread. Corrected to test the mean against its own standard error."
+}

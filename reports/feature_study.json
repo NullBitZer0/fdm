@@ -1,0 +1,10 @@
+{
+  "sample_frac": 0.3,
+  "n_features": 776,
+  "n_train_rows": 311201,
+  "baseline_pr_auc": 0.8908,
+  "best_k": 250,
+  "best_pr_auc": 0.8936,
+  "best_gain": 0.0028,
+  "decision": "keep all features (gain is within noise)"
+}

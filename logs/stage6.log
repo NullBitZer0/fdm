@@ -1,0 +1,74 @@
+
+==============================================================================
+Stage 6 - model development and comparison
+==============================================================================
+train 1,296,675 rows  fraud 0.5789%
+test  555,719 rows  fraud 0.3860%
+train: 1,296,675 -> 1,296,675 rows | bad dates 0 | duplicates 0 | bad amount 0 | bad coordinates 0 | gaps filled 0
+test: 555,719 -> 555,719 rows | bad dates 0 | duplicates 0 | bad amount 0 | bad coordinates 0 | gaps filled 0
+
+     split    rows  fraud_rate              starts                ends
+     train 1037340    0.005753 2019-01-01 00:00:18 2020-03-06 07:15:17
+validation  259335    0.005931 2020-03-06 07:16:43 2020-06-21 12:13:37
+      test  555719    0.003860 2020-06-21 12:14:25 2020-12-31 23:59:34
+
+X_train   1,037,340 rows x 776 features, 2.577% dense
+X_valid   259,335 rows x 776 features, 2.577% dense
+X_test    555,719 rows x 776 features, 2.577% dense
+features  776 (12 numeric + 764 one-hot)
+
+imbalance: 172.8 legitimate rows per fraud row
+
+==============================================================================
+1. Four algorithms on validation PR-AUC
+==============================================================================
+Logistic Regression + SMOTE      PR-AUC 0.2478  ROC-AUC 0.9603  F1 0.4421  (634s)
+Random Forest + Undersampling    PR-AUC 0.7835  ROC-AUC 0.9878  F1 0.7442  (8s)
+XGBoost + Class Weight           PR-AUC 0.9150  ROC-AUC 0.9979  F1 0.8624  (408s)
+/home/NullbitZer0/.hermes/hermes-agent/venv/lib/python3.11/site-packages/lightgbm/sklearn.py:1106: LGBMDeprecationWarning: The argument 'eval_set' is deprecated, use 'eval_X' and 'eval_y' instead.
+  eval_set = _validate_eval_set_Xy(eval_set=eval_set, eval_X=eval_X, eval_y=eval_y)
+LightGBM + Class Weight          PR-AUC 0.8942  ROC-AUC 0.9946  F1 0.8458  (157s)
+
+                        model  pr_auc  roc_auc  precision  recall     f1  seconds
+       XGBoost + Class Weight  0.9150   0.9979     0.9159  0.8147 0.8624    408.2
+      LightGBM + Class Weight  0.8942   0.9946     0.8810  0.8134 0.8458    157.0
+Random Forest + Undersampling  0.7835   0.9878     0.8070  0.6905 0.7442      8.1
+  Logistic Regression + SMOTE  0.2478   0.9603     0.3684  0.5527 0.4421    634.5
+
+baseline (random guessing) = validation fraud rate 0.0059
+
+==============================================================================
+2. Under-sampling vs over-sampling vs class weights
+==============================================================================
+no resampling + class weight     PR-AUC 0.9150  F1 0.8624  rows seen 1,037,340  (405s)
+over-sampling (SMOTE 20%)        PR-AUC 0.8715  F1 0.8342  rows seen 1,032,864  (616s)
+under-sampling (to 20%)          PR-AUC 0.8924  F1 0.8370  rows seen     7,162  (904s)
+under-sampling (to 50%)          PR-AUC 0.8781  F1 0.8195  rows seen     8,952  (921s)
+under-sampling (to 100%)         PR-AUC 0.8624  F1 0.7947  rows seen    11,936  (597s)
+
+                    strategy  pr_auc  precision  recall     f1  train_rows_seen  seconds
+no resampling + class weight  0.9150     0.9159  0.8147 0.8624          1037340    404.7
+     under-sampling (to 20%)  0.8924     0.8819  0.7965 0.8370             7162    903.9
+     under-sampling (to 50%)  0.8781     0.8734  0.7718 0.8195             8952    921.2
+   over-sampling (SMOTE 20%)  0.8715     0.8695  0.8017 0.8342          1032864    615.6
+    under-sampling (to 100%)  0.8624     0.8405  0.7536 0.7947            11936    597.4
+
+==============================================================================
+3. Majority voting ensemble
+==============================================================================
+Majority vote (hard, 2 of 3)             PR-AUC 0.7445  F1 0.8605
+Majority vote (soft, mean probability)   PR-AUC 0.9014  F1 0.8554
+Majority vote (soft, PR-AUC weighted)    PR-AUC 0.9019  F1 0.8548
+member weights: {'Random': 0.302, 'XGBoost': 0.353, 'LightGBM': 0.345}
+
+                                 model  pr_auc  precision  recall     f1
+ Majority vote (soft, PR-AUC weighted)  0.9019     0.9030  0.8114 0.8548
+Majority vote (soft, mean probability)  0.9014     0.9043  0.8114 0.8554
+          Majority vote (hard, 2 of 3)  0.7445     0.9175  0.8101 0.8605
+
+winner on validation: XGBoost + Class Weight (PR-AUC 0.9150, 154x random)
+
+==============================================================================
+saving fitted baseline models for the API
+==============================================================================
+wrote preprocessor.joblib and 4 baseline models to /home/NullbitZer0/projects/fdm/artifacts

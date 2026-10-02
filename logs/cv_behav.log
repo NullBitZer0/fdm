@@ -1,0 +1,55 @@
+
+==============================================================================
+5-fold time-series cross-validation: tuned versus untuned
+==============================================================================
+389,002 rows, 2019-01-01 00:00:18 to 2020-06-21 12:13:36
+overall fraud rate 0.5874%, imbalance 169.2:1
+folds 5 (TimeSeriesSplit: every fold trains only on the past)
+
+  fold  train rows  valid rows  train period              valid period
+     1      64,837      64,833   2019-01-01 00:00  2019-04-20 13:39
+     2     129,670      64,833   2019-01-01 00:00  2019-07-13 06:10
+     3     194,503      64,833   2019-01-01 00:00  2019-10-03 11:30
+     4     259,336      64,833   2019-01-01 00:00  2019-12-18 17:46
+     5     324,169      64,833   2019-01-01 00:00  2020-03-24 16:59
+
+==============================================================================
+row-level only
+==============================================================================
+  fold 1: PR-AUC 0.8465  ROC-AUC 0.9836  (fraud 0.478%, 20s)
+  fold 2: PR-AUC 0.8857  ROC-AUC 0.9946  (fraud 0.507%, 29s)
+  fold 3: PR-AUC 0.8766  ROC-AUC 0.9956  (fraud 0.511%, 32s)
+  fold 4: PR-AUC 0.9104  ROC-AUC 0.9948  (fraud 0.646%, 40s)
+  fold 5: PR-AUC 0.8903  ROC-AUC 0.9974  (fraud 0.581%, 46s)
+
+==============================================================================
++ behavioural history
+==============================================================================
+  fold 1: PR-AUC 0.8453  ROC-AUC 0.9881  (fraud 0.478%, 23s)
+  fold 2: PR-AUC 0.8907  ROC-AUC 0.9958  (fraud 0.507%, 36s)
+  fold 3: PR-AUC 0.8853  ROC-AUC 0.9932  (fraud 0.511%, 45s)
+  fold 4: PR-AUC 0.9022  ROC-AUC 0.9954  (fraud 0.646%, 46s)
+  fold 5: PR-AUC 0.9057  ROC-AUC 0.9971  (fraud 0.581%, 53s)
+
+==============================================================================
+summary
+==============================================================================
+               config  folds  mean_pr_auc  std_pr_auc  min_pr_auc  max_pr_auc  mean_roc_auc
++ behavioural history      5       0.8858      0.0241      0.8453      0.9057        0.9939
+       row-level only      5       0.8819      0.0233      0.8465      0.9104        0.9932
+
+  + behavioural history minus row-level only, per fold: -0.0012, +0.0050, +0.0087, -0.0082, +0.0154
+  mean difference +0.0039, std 0.0091
+  + behavioural history wins 3 of 5 folds
+
+  mean difference +0.0039  standard error 0.0041  t = 0.97 (df=4)
+  |t| >= 2.776 would be needed for significance at p<0.05; this is 0.97
+
+  VERDICT: tuning does not measurably help.
+  The paired difference is within one standard error of zero, so the two
+  configurations are indistinguishable on this data. Note that the sign of
+  the difference flipped between the 30% run (-0.0003) and the full-data run
+  (+0.0024): a real effect should not change sign when you simply add data.
+  The hand-set baseline is what serves.
+
+wrote cv_tuned_vs_untuned.csv, cv_per_fold.csv and cv_summary.json

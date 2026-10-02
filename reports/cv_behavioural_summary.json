@@ -1,0 +1,23 @@
+{
+  "sample_frac": 0.3,
+  "folds": 5,
+  "n_rows": 389002,
+  "comparison": "row-level vs +behavioural",
+  "mean_pr_auc": {
+    "row-level only": 0.8819,
+    "+ behavioural history": 0.8858
+  },
+  "std_pr_auc": {
+    "row-level only": 0.0233,
+    "+ behavioural history": 0.0241
+  },
+  "mean_difference": 0.0039,
+  "std_difference": 0.0091,
+  "standard_error": 0.0041,
+  "t_statistic": 0.97,
+  "significant_at_p05": false,
+  "folds_won": 3,
+  "single_holdout_gain": 0.0128,
+  "verdict": "behavioural features do not measurably help: +0.0128 on one holdout shrank to +0.0039 across 5 folds (t=0.97, p~0.38). Directionally positive but inside the noise. Not adopted.",
+  "cost_if_adopted": "the API could no longer score a self-contained transaction; it would need that card's recent history"
+}

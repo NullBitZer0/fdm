@@ -1,0 +1,50 @@
+
+==============================================================================
+5-fold time-series cross-validation: tuned versus untuned
+==============================================================================
+389,002 rows, 2019-01-01 00:00:18 to 2020-06-21 12:13:36
+overall fraud rate 0.5874%, imbalance 169.2:1
+folds 5 (TimeSeriesSplit: every fold trains only on the past)
+
+  fold  train rows  valid rows  train period              valid period
+     1      64,837      64,833   2019-01-01 00:00  2019-04-20 13:39
+     2     129,670      64,833   2019-01-01 00:00  2019-07-13 06:10
+     3     194,503      64,833   2019-01-01 00:00  2019-10-03 11:30
+     4     259,336      64,833   2019-01-01 00:00  2019-12-18 17:46
+     5     324,169      64,833   2019-01-01 00:00  2020-03-24 16:59
+
+==============================================================================
+untuned (Stage 6)
+==============================================================================
+  fold 1: PR-AUC 0.8465  ROC-AUC 0.9836  (fraud 0.478%, 27s)
+  fold 2: PR-AUC 0.8857  ROC-AUC 0.9946  (fraud 0.507%, 33s)
+  fold 3: PR-AUC 0.8766  ROC-AUC 0.9956  (fraud 0.511%, 40s)
+  fold 4: PR-AUC 0.9104  ROC-AUC 0.9948  (fraud 0.646%, 42s)
+  fold 5: PR-AUC 0.8903  ROC-AUC 0.9974  (fraud 0.581%, 50s)
+
+==============================================================================
+tuned (random search)
+==============================================================================
+  fold 1: PR-AUC 0.8520  ROC-AUC 0.9859  (fraud 0.478%, 23s)
+  fold 2: PR-AUC 0.8791  ROC-AUC 0.9955  (fraud 0.507%, 33s)
+  fold 3: PR-AUC 0.8806  ROC-AUC 0.9965  (fraud 0.511%, 42s)
+  fold 4: PR-AUC 0.9113  ROC-AUC 0.9968  (fraud 0.646%, 42s)
+  fold 5: PR-AUC 0.8849  ROC-AUC 0.9972  (fraud 0.581%, 49s)
+
+==============================================================================
+summary
+==============================================================================
+               config  folds  mean_pr_auc  std_pr_auc  min_pr_auc  max_pr_auc  mean_roc_auc
+    untuned (Stage 6)      5       0.8819      0.0233      0.8465      0.9104        0.9932
+tuned (random search)      5       0.8816      0.0211      0.8520      0.9113        0.9944
+
+  tuned minus untuned, per fold: +0.0055, -0.0066, +0.0040, +0.0009, -0.0054
+  mean difference -0.0003, std 0.0055
+  tuned wins 3 of 5 folds
+
+  VERDICT: tuning does not help.
+  This confirms the full-data result. The random-search winner looked
+  better on 10% of the rows and does not hold up across five separate
+  time periods, so the hand-set baseline is the right thing to serve.
+
+wrote cv_tuned_vs_untuned.csv, cv_per_fold.csv and cv_summary.json

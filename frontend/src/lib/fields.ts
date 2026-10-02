@@ -161,19 +161,35 @@ export function validateTransaction(
 /** `<input type="datetime-local">` wants `YYYY-MM-DDTHH:MM`, the API wants a full timestamp. */
 function toApiValue(name: TransactionField, raw: string): string | number {
   if (name === 'trans_date_trans_time' || name === 'dob') {
+    // <input type="datetime-local"> yields "YYYY-MM-DDTHH:MM"; the API wants a
+    // full timestamp, and a bare date for dob.
     const normalised = raw.replace('T', ' ')
     return name === 'dob' ? normalised.split(' ')[0] : `${normalised}:00`
   }
-  return Number(raw)
+  if (NUMERIC_FIELDS.has(name)) return Number(raw)
+  // merchant, category, gender and state are strings. Coercing them with Number()
+  // produced NaN, which the server rejected as "not a valid string" — a bug that
+  // no API test could catch, because the payload was malformed before it left.
+  return raw
 }
 
+/** Fields the API declares as numbers, so the coercion is driven by the schema. */
+const NUMERIC_FIELDS = new Set<TransactionField>([
+  'amt',
+  'cc_num',
+  'lat',
+  'long',
+  'city_pop',
+  'merch_lat',
+  'merch_long',
+])
+
 export function toApiTransaction(values: Record<string, string>): Transaction {
-  const entry = {} as Transaction
+  const entry = {} as Record<TransactionField, string | number>
   for (const spec of FIELD_SPECS) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(entry as any)[spec.name] = toApiValue(spec.name, values[spec.name] ?? '')
+    entry[spec.name] = toApiValue(spec.name, values[spec.name] ?? '')
   }
-  return entry
+  return entry as unknown as Transaction
 }
 
 /** Distance in km, used only to warn while the user types. */

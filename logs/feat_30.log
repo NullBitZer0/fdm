@@ -1,0 +1,51 @@
+
+==============================================================================
+Feature selection study
+==============================================================================
+train 311,201 rows | validation 77,801 rows | 776 features | imbalance 171.2:1
+
+==============================================================================
+2. Top-k features by XGBoost importance
+==============================================================================
+
+  15 highest-importance features:
+     1. is_night
+     2. amt
+     3. merchant_fraud_Herman Inc
+     4. category_food_dining
+     5. category_misc_net
+     6. category_freq
+     7. merchant_fraud_Fadel-Hilpert
+     8. merchant_fraud_Monahan-Morar
+     9. category_shopping_net
+    10. category_kids_pets
+    11. merchant_fraud_Haley, Batz and Auer
+    12. category_grocery_net
+    13. merchant_fraud_Kovacek Ltd
+    14. category_shopping_pos
+    15. merchant_fraud_Wintheiser, Dietrich and Schimmel
+
+       k    PR-AUC      gain  seconds
+     776    0.8908   +0.0000      266  (all)
+      50    0.7990   -0.0918       85
+     100    0.8839   -0.0069      124
+     250    0.8936   +0.0028      253
+     600    0.8888   -0.0020      200
+
+==============================================================================
+3. Selection
+==============================================================================
+  all 776 features   PR-AUC 0.8908
+  best k = 250            PR-AUC 0.8936  (+0.0028)
+  best trained in 253s against 266s for all features
+
+  k  pr_auc    gain  seconds
+ 50  0.7990 -0.0918     84.9
+100  0.8839 -0.0069    124.0
+250  0.8936  0.0028    253.3
+600  0.8888 -0.0020    199.7
+776  0.8908  0.0000    265.6
+
+DECISION: keep all 776 features. A +0.0028 gain is
+inside run-to-run noise, and dropping features the model does use is not
+worth the risk for nothing.

@@ -1,0 +1,16 @@
+==============================================================================
+Behavioural features: do a card's own history help?
+==============================================================================
+
+building: row-level only (current model)
+  776 features | validation PR-AUC 0.8908 | 218s
+
+building: + behavioural history
+  776 features | validation PR-AUC 0.8908 | 285s
+
+==============================================================================
+comparison
+==============================================================================
+                    featureset  n_features  pr_auc  roc_auc  precision  recall     f1  seconds  gain
+row-level only (current model)         776  0.8908   0.9955     0.9135   0.795 0.8501    218.5   0.0
+         + behavioural history         776  0.8908   0.9955     0.9135   0.795 0.8501    285.3   0.0

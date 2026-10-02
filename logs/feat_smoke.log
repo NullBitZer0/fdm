@@ -1,0 +1,93 @@
+
+==============================================================================
+Feature selection and regularisation study
+==============================================================================
+train 31,120 rows | validation 7,780 rows | 775 features | imbalance 171.9:1
+
+==============================================================================
+1. Does the split matter? chronological vs shuffled
+==============================================================================
+  chronological split  PR-AUC 0.7312
+  shuffled split       PR-AUC 0.7381
+  inflation from shuffling: +0.0069
+
+  The shuffled split puts the same cards and merchants on both sides of the
+  boundary, so the model can memorise identities instead of learning fraud.
+  That is why every number in this project comes from the time-based split.
+
+==============================================================================
+2. Permutation importance (scramble one feature at a time)
+==============================================================================
+  merchant_fraud_Jenkins, Hauck and Friesen drop +0.1289
+  merchant_fraud_Schaefer, Maggio and Daugherty drop +0.1289
+  merchant_fraud_Kutch LLC           drop +0.1289
+  amt                                drop +0.7253
+  merchant_fraud_Fahey Inc           drop +0.1289
+  merchant_fraud_Walter, Hettinger and Kessler drop +0.1289
+  is_night                           drop +0.3099
+  category_kids_pets                 drop +0.1289
+  merchant_fraud_Kertzmann LLC       drop +0.1289
+  merchant_fraud_Beer-Jast           drop +0.1289
+  merchant_fraud_Balistreri-Nader    drop +0.1289
+  merchant_fraud_Wilkinson PLC       drop +0.1289
+  merchant_fraud_Reynolds-Schinner   drop +0.1289
+  merchant_fraud_McCullough, Hudson and Schuster drop +0.1289
+  category_misc_net                  drop +0.1289
+
+  base PR-AUC 0.7312; the top feature costs 0.7253 when scrambled
+
+==============================================================================
+3. L1 and L2 selection from a penalised linear model
+==============================================================================
+  L1 (l1_ratio=1.0): 5/775 coefficients non-zero (252s)
+  L2 (l1_ratio=0.0): 775/775 coefficients non-zero (227s)
+
+  refitting XGBoost on the top-k columns chosen by each penalty:
+       k   L1 PR-AUC   L2 PR-AUC       all
+      30      0.5266      0.6565    0.7312
+      60      0.5267      0.6542    0.7312
+     120      0.5294      0.6694    0.7312
+     240      0.5117      0.6581    0.7312
+     480      0.7331      0.7533    0.7312
+
+==============================================================================
+4. Tree L1 / L2 (reg_alpha, reg_lambda)
+==============================================================================
+   reg_alpha  reg_lambda    PR-AUC      gain
+         0.0         1.0    0.7312   +0.0000
+         0.0        10.0    0.7594   +0.0282
+         1.0         1.0    0.7239   -0.0073
+         1.0        10.0    0.7483   +0.0170
+         5.0        10.0    0.7411   +0.0099
+        10.0        50.0    0.7367   +0.0055
+
+==============================================================================
+5. Recursive feature elimination
+==============================================================================
+    kept    PR-AUC      gain
+     775    0.7312   +0.0000  (all features)
+Traceback (most recent call last):
+  File "/home/NullbitZer0/projects/fdm/scripts/feature_study.py", line 355, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/NullbitZer0/projects/fdm/scripts/feature_study.py", line 312, in main
+    rfe = rfe_experiment(X_train, y_train, X_valid, y_valid, names, imbalance, baseline_pr)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/NullbitZer0/projects/fdm/scripts/feature_study.py", line 256, in rfe_experiment
+    pr = average_precision_score(y_valid, model.predict_proba(X_valid[:, keep])[:, 1])
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/NullbitZer0/.hermes/hermes-agent/venv/lib/python3.11/site-packages/xgboost/sklearn.py", line 1921, in predict_proba
+    class_probs = super().predict(
+                  ^^^^^^^^^^^^^^^^
+  File "/home/NullbitZer0/.hermes/hermes-agent/venv/lib/python3.11/site-packages/xgboost/core.py", line 751, in inner_f
+    return func(**kwargs)
+           ^^^^^^^^^^^^^^
+  File "/home/NullbitZer0/.hermes/hermes-agent/venv/lib/python3.11/site-packages/xgboost/sklearn.py", line 1446, in predict
+    predts = self.get_booster().inplace_predict(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/NullbitZer0/.hermes/hermes-agent/venv/lib/python3.11/site-packages/xgboost/core.py", line 751, in inner_f
+    return func(**kwargs)
+           ^^^^^^^^^^^^^^
+  File "/home/NullbitZer0/.hermes/hermes-agent/venv/lib/python3.11/site-packages/xgboost/core.py", line 2865, in inplace_predict
+    raise ValueError(
+ValueError: Feature shape mismatch, expected: 775, got 620

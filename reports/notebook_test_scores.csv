@@ -1,0 +1,2 @@
+model,pr_auc,roc_auc,threshold,precision,recall,f1,seconds
+XGBoost (test),0.8669,0.9962,0.9697,0.8682,0.78,0.8217,0

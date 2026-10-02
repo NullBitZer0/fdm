@@ -1,0 +1,9 @@
+{
+  "sample_frac": 0.3,
+  "baseline_pr_auc": 0.8908,
+  "behavioural_pr_auc": 0.9036,
+  "gain": 0.0128,
+  "n_features_added": 8,
+  "behavioural_share_of_importance": 0.0137,
+  "decision": "adopt"
+}

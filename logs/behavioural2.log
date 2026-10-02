@@ -1,0 +1,44 @@
+==============================================================================
+Behavioural features: do a card's own history help?
+==============================================================================
+
+building: row-level only (current model)
+  776 features | validation PR-AUC 0.8908 | 290s
+
+building: + behavioural history
+  784 features | validation PR-AUC 0.9036 | 546s
+
+==============================================================================
+comparison
+==============================================================================
+                    featureset  n_features  pr_auc  roc_auc  precision  recall     f1  seconds   gain
+row-level only (current model)         776  0.8908   0.9955     0.9135  0.7950 0.8501    290.0 0.0000
+         + behavioural history         784  0.9036   0.9968     0.9233  0.8054 0.8603    545.9 0.0128
+
+behavioural features occupy 1.4% of total importance across 8 columns
+
+behavioural feature importances:
+  card_txn_1h                  0.0029
+  card_amt_ratio               0.0022
+  card_category_seen           0.0021
+  card_amt_dev                 0.0018
+  card_txn_24h                 0.0018
+  card_hours_since_last        0.0015
+  card_dist_from_home_km       0.0015
+  card_is_new                  0.0000
+
+top 10 features overall:
+  is_night                         0.1212
+  amt                              0.0809
+  merchant_fraud_Fadel-Hilpert     0.0253
+  category_food_dining             0.0244
+  category_freq                    0.0193
+  category_misc_net                0.0186
+  merchant_fraud_Zulauf LLC        0.0177
+  category_kids_pets               0.0142
+  category_shopping_net            0.0139
+  merchant_fraud_Shields-Wunsch    0.0127
+
+DECISION: adopt. +0.0128 clears the 0.021 noise band.
+This needs a serving change: the API can no longer score a single
+self-contained transaction, it needs that card's recent history.

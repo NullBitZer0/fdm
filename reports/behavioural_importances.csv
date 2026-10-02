@@ -1,0 +1,785 @@
+,0
+is_night,0.12121489
+amt,0.0809253
+merchant_fraud_Fadel-Hilpert,0.025310077
+category_food_dining,0.024442816
+category_freq,0.019263392
+category_misc_net,0.018591573
+merchant_fraud_Zulauf LLC,0.017735388
+category_kids_pets,0.0141744735
+category_shopping_net,0.013912814
+merchant_fraud_Shields-Wunsch,0.012714581
+category_personal_care,0.012521822
+category_grocery_net,0.012353973
+"merchant_fraud_Wintheiser, Dietrich and Schimmel",0.012273225
+category_entertainment,0.011778458
+"merchant_fraud_Hahn, Douglas and Schowalter",0.011508282
+merchant_fraud_Eichmann-Russel,0.011286085
+merchant_fraud_Williamson LLC,0.011048908
+"merchant_fraud_Turcotte, Batz and Buckridge",0.010936603
+category_home,0.010888594
+"merchant_fraud_Hagenes, Hermann and Stroman",0.010793005
+"merchant_fraud_Brown, Homenick and Lesch",0.010174533
+"merchant_fraud_Nienow, Barrows and Romaguera",0.0100487815
+merchant_fraud_Padberg-Sauer,0.009534484
+merchant_fraud_Mosciski Group,0.00947799
+merchant_fraud_Kessler Group,0.008885123
+category_shopping_pos,0.008848234
+merchant_fraud_Kuhn Group,0.008800481
+"merchant_fraud_Yost, Block and Koepp",0.008733269
+merchant_fraud_Nader-Maggio,0.008504056
+"merchant_fraud_McCullough, Hudson and Schuster",0.008480071
+merchant_fraud_Kovacek Ltd,0.0084346365
+merchant_fraud_Schiller Ltd,0.008214482
+merchant_fraud_Bode-Rempel,0.008193716
+merchant_fraud_Champlin-Casper,0.00813136
+merchant_fraud_Herman Inc,0.007903508
+merchant_fraud_Volkman PLC,0.007754813
+merchant_fraud_Ernser-Lynch,0.007577307
+"merchant_fraud_Kilback, Nitzsche and Leffler",0.0070102196
+merchant_fraud_Auer-West,0.006843297
+merchant_fraud_Cummings Group,0.0063519827
+category_misc_pos,0.00612767
+state_MA,0.006126159
+merchant_fraud_Dare-Gibson,0.0060085617
+"merchant_fraud_Haley, Batz and Auer",0.005769161
+"merchant_fraud_Ferry, Reichel and DuBuque",0.005672114
+merchant_fraud_Boyer-Haley,0.0055894614
+merchant_fraud_Marvin-Lind,0.005203527
+"merchant_fraud_Bahringer, Osinski and Block",0.005140499
+merchant_fraud_Welch Inc,0.004912717
+merchant_fraud_Kertzmann LLC,0.0048238817
+state_MD,0.0047331443
+state_PA,0.004491298
+merchant_fraud_Haag-Blanda,0.004063854
+merchant_fraud_Morissette-Schaefer,0.0040529505
+"merchant_fraud_Swaniawski, Bahringer and Ledner",0.0040403437
+merchant_fraud_Erdman-Ebert,0.003940275
+state_LA,0.0039010234
+merchant_fraud_Thiel PLC,0.0036705607
+hour,0.0035969333
+state_TN,0.0035885086
+state_AR,0.0035023463
+merchant_fraud_Wilkinson PLC,0.003475199
+merchant_fraud_Wiza LLC,0.0034228058
+merchant_fraud_Schuppe LLC,0.0034077596
+category_health_fitness,0.0033439416
+"merchant_fraud_Bradtke, Torp and Bahringer",0.0033239136
+merchant_fraud_Rau-Grant,0.0032723972
+merchant_fraud_Larkin Ltd,0.0032606977
+merchant_fraud_Stark-Koss,0.003244056
+merchant_fraud_Kutch-Ferry,0.0031790964
+merchant_fraud_Lemke and Sons,0.0030990795
+merchant_fraud_Swift PLC,0.0030808086
+merchant_fraud_Schaefer Ltd,0.003075879
+merchant_fraud_Ruecker-Mayert,0.003068059
+"merchant_fraud_Kutch, Steuber and Gerhold",0.0030039977
+merchant_fraud_Reynolds-Schinner,0.0029421626
+age,0.0028758834
+card_txn_1h,0.0028675885
+state_GA,0.0028328814
+merchant_fraud_Pouros-Conroy,0.002733679
+merchant_fraud_Shanahan-Lehner,0.0027024024
+merchant_fraud_O'Keefe-Wisoky,0.0026887374
+merchant_fraud_Monahan-Morar,0.002660502
+merchant_fraud_Hammes-Beatty,0.0026209336
+state_WY,0.002579754
+merchant_fraud_Hermann and Sons,0.0025549203
+state_OH,0.0025253515
+merchant_fraud_Lesch Ltd,0.002502258
+merchant_fraud_Torp-Labadie,0.002466263
+state_ME,0.0024127578
+merchant_fraud_Gutmann Ltd,0.0023823935
+merchant_fraud_Stiedemann Ltd,0.0023525553
+merchant_fraud_Schoen-Quigley,0.002309657
+merchant_fraud_Rippin-VonRueden,0.0022797335
+merchant_freq,0.0022435999
+city_pop_log,0.002171236
+card_amt_ratio,0.002160596
+"merchant_fraud_Daugherty, Pouros and Beahan",0.0021499917
+merchant_fraud_Fahey Inc,0.0021105164
+merchant_fraud_Yost-Rogahn,0.0021003436
+"merchant_fraud_Rowe, Batz and Goodwin",0.0020813737
+merchant_fraud_Reichel LLC,0.0020634818
+"merchant_fraud_Konopelski, Schneider and Hartmann",0.0020633764
+card_category_seen,0.0020609137
+merchant_fraud_Murray Ltd,0.002029542
+state_CA,0.0020139776
+"merchant_fraud_Greenholt, O'Hara and Balistreri",0.0019843199
+merchant_fraud_Homenick LLC,0.0019314062
+merchant_fraud_Kuhic LLC,0.0019012674
+merchant_fraud_Kozey-McDermott,0.0018765408
+card_amt_dev,0.0018434462
+merchant_fraud_Barton LLC,0.001837294
+state_WV,0.0017885675
+card_txn_24h,0.0017767661
+merchant_fraud_Schulist Ltd,0.0017426544
+merchant_fraud_Pacocha-Bauch,0.0017414427
+merchant_fraud_Roob LLC,0.001707145
+merchant_fraud_Sporer-Keebler,0.0016851643
+"merchant_fraud_Moore, Williamson and Emmerich",0.0016355757
+merchant_fraud_Fritsch and Sons,0.0016329915
+"merchant_fraud_Hyatt, Russel and Gleichner",0.0016215298
+merchant_fraud_Gottlieb-Hansen,0.0016215029
+state_WI,0.0016166958
+merchant_fraud_Heller-Langosh,0.0015538039
+gender_freq,0.0015486048
+state_AL,0.0015485578
+card_hours_since_last,0.001536576
+merchant_fraud_Turner LLC,0.0015240633
+distance_km,0.001522129
+"merchant_fraud_Zboncak, Rowe and Murazik",0.0015147667
+"merchant_fraud_Quitzon, Green and Bashirian",0.0014988083
+"merchant_fraud_Bins, Balistreri and Beatty",0.001490635
+card_dist_from_home_km,0.0014573759
+merchant_fraud_Mayert Group,0.0014318173
+merchant_fraud_Kihn Inc,0.0013929885
+state_freq,0.0013557309
+day,0.0013552929
+state_WA,0.0013180396
+merchant_fraud_Prosacco LLC,0.0013180382
+merchant_fraud_Bode-Schuster,0.0013170255
+dayofweek,0.0013121696
+merchant_fraud_Bogisich-Weimann,0.0013111458
+merchant_fraud_Dibbert-Green,0.0012701638
+merchant_fraud_Spencer PLC,0.0012251583
+merchant_fraud_Morar Inc,0.0012028856
+"merchant_fraud_Douglas, Schneider and Turner",0.0011997016
+merchant_fraud_Kautzer and Sons,0.0011875525
+merchant_fraud_Medhurst PLC,0.0011766661
+merchant_fraud_Powlowski-Weimann,0.0011696407
+state_MI,0.0011150986
+merchant_fraud_Kutch-Wilderman,0.0011035554
+state_OK,0.001084386
+"merchant_fraud_Mueller, Gerhold and Mueller",0.0010817859
+merchant_fraud_Koepp-Witting,0.001080201
+"merchant_fraud_Heller, Gutmann and Zieme",0.0010687647
+month,0.0010687117
+state_NE,0.0010223726
+state_VA,0.0010093753
+merchant_fraud_Keeling-Crist,0.00097451877
+merchant_fraud_Stiedemann Inc,0.00096211326
+"merchant_fraud_Swift, Bradtke and Marquardt",0.00095912657
+"merchant_fraud_Weimann, Kuhic and Beahan",0.0009566274
+"merchant_fraud_Lehner, Reichert and Mills",0.0009496465
+"merchant_fraud_Baumbach, Strosin and Nicolas",0.00093168387
+"merchant_fraud_Moen, Reinger and Murphy",0.0009191274
+"merchant_fraud_Stroman, Hudson and Erdman",0.0009001281
+merchant_fraud_Haley Group,0.0008901665
+merchant_fraud_Heller-Abshire,0.00088091666
+state_MO,0.0008679625
+state_FL,0.00084539177
+merchant_fraud_Skiles-Ankunding,0.00083388353
+merchant_fraud_Johns Inc,0.000802595
+state_IN,0.0007973597
+merchant_fraud_Gislason Group,0.00079348934
+"merchant_fraud_Klocko, Runolfsdottir and Breitenberg",0.0007830087
+"merchant_fraud_Hahn, Bahringer and McLaughlin",0.0007823924
+merchant_fraud_Kozey-Kuhlman,0.0007737451
+"merchant_fraud_Schroeder, Hauck and Treutel",0.0007639744
+state_NY,0.0007550079
+state_SD,0.00074045314
+state_DC,0.0007284528
+merchant_fraud_Schmeler-Howe,0.00072457874
+state_SC,0.0007178348
+"merchant_fraud_Walter, Hettinger and Kessler",0.00071766344
+merchant_fraud_Gerhold LLC,0.0007165221
+"merchant_fraud_Pouros, Walker and Spencer",0.0007034661
+merchant_fraud_Emmerich-Luettgen,0.0007023256
+"merchant_fraud_Jenkins, Hauck and Friesen",0.0006989059
+"merchant_fraud_Schiller, Blanda and Johnson",0.00069012726
+merchant_fraud_White and Sons,0.0006730427
+merchant_fraud_Bahringer-Streich,0.00065722194
+"merchant_fraud_Greenholt, Jacobi and Gleason",0.00065275497
+merchant_fraud_Morissette PLC,0.0006490502
+merchant_fraud_Brown Inc,0.00064803567
+merchant_fraud_Crooks and Sons,0.0006394579
+merchant_fraud_Schimmel-Olson,0.000630009
+state_OR,0.0006294887
+merchant_fraud_Hamill-D'Amore,0.0006161077
+merchant_fraud_Kub PLC,0.00061469723
+"merchant_fraud_Hagenes, Kohler and Hoppe",0.00060499023
+"merchant_fraud_Ritchie, Oberbrunner and Cremin",0.0006048205
+"merchant_fraud_Bahringer, Bergnaum and Quitzon",0.00060456875
+state_IA,0.000604345
+merchant_fraud_Harris Inc,0.0006032667
+merchant_fraud_Tromp Group,0.0006011925
+"merchant_fraud_Yost, Schamberger and Windler",0.00059760833
+merchant_fraud_Nolan-Williamson,0.00059261406
+merchant_fraud_Gleason and Sons,0.0005888415
+"merchant_fraud_Hermiston, Pacocha and Smith",0.00058711553
+"merchant_fraud_Towne, Walker and Borer",0.0005784192
+merchant_fraud_Torphy-Goyette,0.0005764245
+"merchant_fraud_Koss, McLaughlin and Mayer",0.00056066544
+merchant_fraud_Leffler-Goldner,0.00055707066
+merchant_fraud_Labadie LLC,0.00055508234
+merchant_fraud_McCullough Group,0.0005532508
+"merchant_fraud_Mosciski, Ziemann and Farrell",0.00054503104
+merchant_fraud_Wisozk and Sons,0.00054308696
+"merchant_fraud_Lang, Towne and Schuppe",0.00054243056
+"merchant_fraud_Nienow, Ankunding and Collier",0.0005307394
+merchant_fraud_Dickinson Ltd,0.00050545356
+merchant_fraud_Cruickshank-Mills,0.00049925235
+merchant_fraud_Lebsack and Sons,0.0004955102
+merchant_fraud_Gottlieb Group,0.0004948591
+"merchant_fraud_Reinger, Weissnat and Strosin",0.0004945104
+"merchant_fraud_Terry, Johns and Bins",0.00049020036
+"merchant_fraud_Kerluke, Considine and Macejkovic",0.00048551406
+merchant_fraud_Towne LLC,0.0004828497
+merchant_fraud_Roob-Okuneva,0.00047327517
+merchant_fraud_Carroll PLC,0.00047286804
+merchant_fraud_Rodriguez Group,0.00047005038
+state_KY,0.00046605157
+merchant_fraud_Berge-Hills,0.0004641935
+merchant_fraud_Simonis-Prohaska,0.00046373782
+amt_is_round,0.0004629368
+state_KS,0.00046278958
+merchant_fraud_Conroy-Cruickshank,0.00046152447
+state_NJ,0.00046008851
+merchant_fraud_Hintz-Bruen,0.00044900257
+merchant_fraud_Auer LLC,0.00043805342
+merchant_fraud_Beer-Jast,0.00043425118
+state_MS,0.0004283784
+merchant_fraud_Bartoletti-Wunsch,0.0004151417
+state_MN,0.00041414308
+merchant_fraud_Torp-Lemke,0.00041000763
+merchant_fraud_Ullrich Ltd,0.00040368916
+merchant_fraud_Schroeder Group,0.00040362225
+state_ND,0.00040213965
+"merchant_fraud_Roberts, Ryan and Smith",0.00039856296
+merchant_fraud_Kassulke PLC,0.00039437268
+merchant_fraud_Collier Inc,0.00038925975
+state_NC,0.0003861581
+merchant_fraud_Breitenberg-Hermiston,0.00038273973
+merchant_fraud_Rau-Robel,0.0003788494
+"merchant_fraud_Towne, Greenholt and Koepp",0.00037824328
+merchant_fraud_Bernier and Sons,0.00036912222
+merchant_fraud_McCullough LLC,0.00035147773
+merchant_fraud_Bernhard Inc,0.00034817503
+"merchant_fraud_Champlin, Rolfson and Connelly",0.00033949444
+merchant_fraud_Thompson-Gleason,0.00033698994
+"merchant_fraud_Raynor, Feest and Miller",0.0003334571
+merchant_fraud_Ruecker Group,0.00033125613
+category_grocery_pos,0.0003305712
+"merchant_fraud_Morissette, Weber and Wiegand",0.00033033727
+"merchant_fraud_Lubowitz, Terry and Stracke",0.00032894732
+merchant_fraud_Pacocha-Weissnat,0.00032777074
+"merchant_fraud_Weber, Thiel and Hammes",0.00032550152
+state_AZ,0.0003237888
+"merchant_fraud_Medhurst, Cartwright and Ebert",0.00031936364
+"merchant_fraud_O'Connell, Botsford and Hand",0.00031366176
+"merchant_fraud_Berge, Kautzer and Harris",0.0003135444
+merchant_fraud_Jacobi Inc,0.00031336464
+merchant_fraud_Hills-Boyer,0.00031301402
+"merchant_fraud_Rippin, Kub and Mann",0.00030762557
+merchant_fraud_Herzog Ltd,0.00030651136
+merchant_fraud_Windler LLC,0.00029616445
+merchant_fraud_Zemlak Group,0.00029267822
+"merchant_fraud_Schoen, Nienow and Bauch",0.00028521483
+merchant_fraud_Emmerich-Rau,0.000274282
+state_NH,0.0002721102
+merchant_fraud_Bins-Rice,0.00026657834
+"merchant_fraud_Hartmann, Rowe and Hermann",0.00025875735
+merchant_fraud_Jast Ltd,0.00025288804
+merchant_fraud_Friesen-Ortiz,0.00024967504
+"merchant_fraud_Adams, Kovacek and Kuhlman",0.0002461247
+"merchant_fraud_Kihn, Brakus and Goyette",0.00024438192
+"merchant_fraud_Ruecker, Beer and Collier",0.0002401512
+state_NM,0.00023740625
+merchant_fraud_Kub-Heaney,0.00023414868
+"merchant_fraud_Gottlieb, Considine and Schultz",0.00022582358
+merchant_fraud_Nader-Heller,0.0002150783
+merchant_fraud_Kutch LLC,0.00020954428
+merchant_fraud_Jewess LLC,0.00020921735
+"merchant_fraud_Streich, Rolfson and Wilderman",0.00020202658
+merchant_fraud_Shields Inc,0.0002007941
+"merchant_fraud_Metz, Russel and Metz",0.00020001702
+merchant_fraud_Schoen Ltd,0.00019436103
+merchant_fraud_Gibson-Deckow,0.0001924806
+merchant_fraud_Waelchi-Wolf,0.00017265131
+merchant_fraud_Romaguera Ltd,0.00016751947
+"merchant_fraud_Rutherford, Homenick and Bergstrom",0.00016264297
+merchant_fraud_Terry-Huel,0.0001616326
+merchant_fraud_Kerluke-Abshire,0.00016040295
+merchant_fraud_Berge-Ullrich,0.00015986254
+merchant_fraud_Hudson-Grady,0.00015629774
+state_IL,0.00015542642
+merchant_fraud_Watsica LLC,0.00014135489
+state_VT,0.00013741142
+"merchant_fraud_Altenwerth, Cartwright and Koss",0.00013720928
+merchant_fraud_Heller PLC,0.00013653698
+merchant_fraud_Ratke and Sons,0.00013638443
+state_UT,0.0001348616
+merchant_fraud_Bednar Inc,0.00013121877
+merchant_fraud_Koelpin and Sons,0.00012663912
+"merchant_fraud_Herman, Treutel and Dickens",0.00012168783
+"merchant_fraud_Kutch, Hermiston and Farrell",0.000112363894
+merchant_fraud_Kris-Kertzmann,0.00010264372
+merchant_fraud_Rolfson-Kunde,9.7426135e-05
+merchant_fraud_Langworth LLC,9.7259304e-05
+merchant_fraud_Kutch and Sons,9.0241534e-05
+"merchant_fraud_Dare, Fritsch and Zboncak",8.3160354e-05
+merchant_fraud_DuBuque LLC,7.513105e-05
+"merchant_fraud_Haley, Jewess and Bechtelar",6.869351e-05
+state_NV,6.3613e-05
+merchant_fraud_Corwin-Romaguera,5.7860958e-05
+merchant_fraud_McDermott-Rice,4.6462294e-05
+merchant_fraud_Schmitt Inc,4.0716088e-05
+"merchant_fraud_Zieme, Bode and Dooley",4.041877e-05
+merchant_fraud_Buckridge PLC,3.5164998e-05
+merchant_fraud_Lynch Ltd,2.4878316e-05
+merchant_fraud_Barton Inc,1.3205784e-05
+merchant_fraud_Friesen-D'Amore,9.537962e-06
+"merchant_fraud_Baumbach, Hodkiewicz and Walsh",5.867479e-06
+merchant_fraud_Pfeffer and Sons,4.5717934e-06
+merchant_fraud_Huel-Langworth,3.68933e-06
+"merchant_fraud_Runolfsdottir, Mueller and Hand",0.0
+"merchant_fraud_Runte, Green and Emard",0.0
+merchant_fraud_Runte-Mohr,0.0
+merchant_fraud_Botsford PLC,0.0
+merchant_fraud_Rutherford-Mertz,0.0
+merchant_fraud_Satterfield-Lowe,0.0
+merchant_fraud_Sawayn PLC,0.0
+merchant_fraud_Botsford Ltd,0.0
+"merchant_fraud_Schaefer, Maggio and Daugherty",0.0
+merchant_fraud_Runolfsson and Sons,0.0
+merchant_fraud_Botsford and Sons,0.0
+merchant_fraud_Boyer PLC,0.0
+merchant_fraud_Boyer-Reichert,0.0
+merchant_fraud_Rowe-Vandervort,0.0
+merchant_fraud_Bradtke PLC,0.0
+merchant_fraud_Breitenberg LLC,0.0
+"merchant_fraud_Roob, Conn and Tremblay",0.0
+merchant_fraud_Brekke and Sons,0.0
+"merchant_fraud_Romaguera, Wehner and Tromp",0.0
+"merchant_fraud_Romaguera, Cruickshank and Greenholt",0.0
+merchant_fraud_Romaguera and Sons,0.0
+merchant_fraud_Brown PLC,0.0
+merchant_fraud_Brown-Greenholt,0.0
+"merchant_fraud_Schaefer, Fay and Hilll",0.0
+"merchant_fraud_Schuppe, Nolan and Hoeger",0.0
+merchant_fraud_Bernhard-Lesch,0.0
+"merchant_fraud_Schumm, McLaughlin and Carter",0.0
+"merchant_fraud_Schumm, Bauch and Ondricka",0.0
+merchant_fraud_Schumm PLC,0.0
+"merchant_fraud_Schultz, Simonis and Little",0.0
+"merchant_fraud_Bernier, Streich and Jewess",0.0
+"merchant_fraud_Schroeder, Wolff and Hermiston",0.0
+"merchant_fraud_Bernier, Volkman and Hoeger",0.0
+merchant_fraud_Bins-Howell,0.0
+merchant_fraud_Bins-Tillman,0.0
+merchant_fraud_Block Group,0.0
+"merchant_fraud_Schoen, Kuphal and Nitzsche",0.0
+merchant_fraud_Schamberger-O'Keefe,0.0
+"merchant_fraud_Schneider, Hayes and Nikolaus",0.0
+merchant_fraud_Schmitt Ltd,0.0
+merchant_fraud_Block-Parisian,0.0
+merchant_fraud_Schmidt-Larkin,0.0
+merchant_fraud_Schmidt and Sons,0.0
+"merchant_fraud_Boehm, Block and Jakubowski",0.0
+"merchant_fraud_Schmeler, Bashirian and Price",0.0
+merchant_fraud_Schmeler Inc,0.0
+"merchant_fraud_Boehm, Predovic and Reinger",0.0
+merchant_fraud_Bogisich Inc,0.0
+merchant_fraud_Bogisich-Homenick,0.0
+"merchant_fraud_Rohan, White and Aufderhar",0.0
+"merchant_fraud_Schaefer, McGlynn and Bosco",0.0
+merchant_fraud_Block-Hauck,0.0
+merchant_fraud_Collier LLC,0.0
+merchant_fraud_Quitzon-Goyette,0.0
+merchant_fraud_Connelly PLC,0.0
+"merchant_fraud_Prosacco, Kreiger and Kovacek",0.0
+"merchant_fraud_Connelly, Reichert and Fritsch",0.0
+merchant_fraud_Prohaska-Murray,0.0
+merchant_fraud_Price Inc,0.0
+merchant_fraud_Predovic Inc,0.0
+merchant_fraud_Connelly-Carter,0.0
+merchant_fraud_Pouros-Haag,0.0
+merchant_fraud_Conroy Ltd,0.0
+"merchant_fraud_Conroy, Balistreri and Gorczany",0.0
+merchant_fraud_Pollich LLC,0.0
+merchant_fraud_Bruen-Yost,0.0
+merchant_fraud_Paucek-Wiza,0.0
+merchant_fraud_Parker-Kunde,0.0
+"merchant_fraud_Parker, Nolan and Trantow",0.0
+"merchant_fraud_Parisian, Schiller and Altenwerth",0.0
+merchant_fraud_Parisian and Sons,0.0
+merchant_fraud_Pagac LLC,0.0
+merchant_fraud_Padberg-Welch,0.0
+merchant_fraud_Conroy-Emard,0.0
+merchant_fraud_Padberg-Rogahn,0.0
+merchant_fraud_Cormier LLC,0.0
+merchant_fraud_Pacocha-O'Reilly,0.0
+"merchant_fraud_Cormier, Stracke and Thiel",0.0
+"merchant_fraud_Osinski, Ledner and Leuschke",0.0
+merchant_fraud_Pfeffer LLC,0.0
+"merchant_fraud_Rodriguez, Yost and Jenkins",0.0
+merchant_fraud_Schuppe-Schuppe,0.0
+merchant_fraud_Roberts-Beahan,0.0
+"merchant_fraud_Roberts, Daniel and Macejkovic",0.0
+"merchant_fraud_Robel, Cummerata and Prosacco",0.0
+merchant_fraud_Cartwright PLC,0.0
+"merchant_fraud_Ritchie, Bradtke and Stiedemann",0.0
+merchant_fraud_Cartwright-Harris,0.0
+"merchant_fraud_Casper, Hand and Zulauf",0.0
+merchant_fraud_Cassin-Harvey,0.0
+merchant_fraud_Renner Ltd,0.0
+merchant_fraud_Rempel PLC,0.0
+merchant_fraud_Rempel Inc,0.0
+merchant_fraud_Rau and Sons,0.0
+"merchant_fraud_Reilly, Heaney and Cole",0.0
+merchant_fraud_Reilly and Sons,0.0
+merchant_fraud_Reilly LLC,0.0
+merchant_fraud_Reichert-Weissnat,0.0
+"merchant_fraud_Reichert, Shanahan and Hayes",0.0
+"merchant_fraud_Reichert, Rowe and Mraz",0.0
+"merchant_fraud_Reichert, Huels and Hoppe",0.0
+"merchant_fraud_Reichel, Bradtke and Blanda",0.0
+"merchant_fraud_Christiansen, Goyette and Schamberger",0.0
+merchant_fraud_Reichel Inc,0.0
+"merchant_fraud_Raynor, Reinger and Hagenes",0.0
+merchant_fraud_Christiansen-Gusikowski,0.0
+merchant_fraud_Cole PLC,0.0
+"merchant_fraud_Cole, Hills and Jewess",0.0
+merchant_fraud_Champlin and Sons,0.0
+"merchant_fraud_Welch, Rath and Koepp",0.0
+state_MT,0.0
+amt_log,0.0
+state_RI,0.0
+state_TX,0.0
+merchant_fraud_Weber and Sons,0.0
+"merchant_fraud_Watsica, Haag and Considine",0.0
+merchant_fraud_Abbott-Rogahn,0.0
+merchant_fraud_Waters-Cruickshank,0.0
+merchant_fraud_Abbott-Steuber,0.0
+merchant_fraud_Abernathy and Sons,0.0
+merchant_fraud_Waelchi Inc,0.0
+merchant_fraud_VonRueden Group,0.0
+merchant_fraud_Berge LLC,0.0
+merchant_fraud_Abshire PLC,0.0
+merchant_fraud_Volkman Ltd,0.0
+merchant_fraud_Veum-Koelpin,0.0
+merchant_fraud_Vandervort-Funk,0.0
+merchant_fraud_Upton PLC,0.0
+merchant_fraud_Adams-Barrows,0.0
+"merchant_fraud_Turner, Ziemann and Lehner",0.0
+"merchant_fraud_Turner, Ruecker and Parisian",0.0
+merchant_fraud_Turner and Sons,0.0
+merchant_fraud_Altenwerth-Kilback,0.0
+merchant_fraud_Turcotte-Halvorson,0.0
+"merchant_fraud_Turcotte, McKenzie and Koss",0.0
+merchant_fraud_Ankunding LLC,0.0
+merchant_fraud_Volkman-Predovic,0.0
+is_weekend,0.0
+merchant_fraud_Ziemann-Waters,0.0
+"merchant_fraud_Zemlak, Tillman and Cremin",0.0
+merchant_fraud_Will Ltd,0.0
+merchant_fraud_Weimann-Lockman,0.0
+merchant_fraud_Zboncak Ltd,0.0
+merchant_fraud_Zboncak LLC,0.0
+card_is_new,0.0
+category_gas_transport,0.0
+category_travel,0.0
+merchant_fraud_Wuckert-Walter,0.0
+merchant_fraud_Wuckert-Goldner,0.0
+"merchant_fraud_Wuckert, Wintheiser and Friesen",0.0
+state_ID,0.0
+"merchant_fraud_Wiza, Schaden and Stark",0.0
+gender_F,0.0
+"merchant_fraud_Witting, Beer and Ernser",0.0
+gender_M,0.0
+state_AK,0.0
+"merchant_fraud_Windler, Goodwin and Kovacek",0.0
+state_CO,0.0
+"merchant_fraud_Willms, Kris and Bergnaum",0.0
+state_CT,0.0
+state_DE,0.0
+state_HI,0.0
+merchant_fraud_Wilkinson Ltd,0.0
+merchant_fraud_Wilkinson LLC,0.0
+merchant_fraud_Wiegand-Lowe,0.0
+merchant_fraud_Wolf Inc,0.0
+"merchant_fraud_Streich, Dietrich and Barton",0.0
+merchant_fraud_Streich Ltd,0.0
+merchant_fraud_Stracke-Lemke,0.0
+merchant_fraud_Stoltenberg-Beatty,0.0
+"merchant_fraud_Stokes, Christiansen and Sipes",0.0
+merchant_fraud_Bechtelar-Rippin,0.0
+"merchant_fraud_Stehr, Jewess and Schimmel",0.0
+"merchant_fraud_Becker, Harris and Harvey",0.0
+merchant_fraud_Stark-Batz,0.0
+"merchant_fraud_Stanton, Jakubowski and Baumbach",0.0
+merchant_fraud_Stamm-Witting,0.0
+merchant_fraud_Stamm-Rodriguez,0.0
+merchant_fraud_Bednar Group,0.0
+"merchant_fraud_Tromp, Kerluke and Glover",0.0
+merchant_fraud_Spinka-Welch,0.0
+merchant_fraud_Spinka Inc,0.0
+merchant_fraud_Spencer-Runolfsson,0.0
+merchant_fraud_Bednar PLC,0.0
+merchant_fraud_Smitham-Schiller,0.0
+merchant_fraud_Smitham-Boehm,0.0
+merchant_fraud_Smith-Stokes,0.0
+merchant_fraud_Beier LLC,0.0
+merchant_fraud_Skiles LLC,0.0
+merchant_fraud_Beier and Sons,0.0
+merchant_fraud_Beier-Hyatt,0.0
+merchant_fraud_Osinski Inc,0.0
+"merchant_fraud_Bernhard, Grant and Langworth",0.0
+merchant_fraud_Sporer Inc,0.0
+merchant_fraud_Ankunding-Carroll,0.0
+merchant_fraud_Treutel-King,0.0
+merchant_fraud_Trantow PLC,0.0
+"merchant_fraud_Armstrong, Walter and Gottlieb",0.0
+merchant_fraud_Auer-Mosciski,0.0
+merchant_fraud_Bahringer Group,0.0
+merchant_fraud_Torphy-Kertzmann,0.0
+"merchant_fraud_Bahringer, Schoen and Corkery",0.0
+merchant_fraud_Bahringer-Larson,0.0
+merchant_fraud_Bailey-Morar,0.0
+"merchant_fraud_Torp, Muller and Borer",0.0
+"merchant_fraud_Tillman, Fritsch and Schmitt",0.0
+"merchant_fraud_Tillman, Dickinson and Labadie",0.0
+"merchant_fraud_Streich, Hansen and Veum",0.0
+merchant_fraud_Balistreri-Nader,0.0
+merchant_fraud_Thiel-Thiel,0.0
+merchant_fraud_Barrows PLC,0.0
+merchant_fraud_Thiel Ltd,0.0
+merchant_fraud_Bartoletti and Sons,0.0
+merchant_fraud_Terry Ltd,0.0
+merchant_fraud_Bashirian Group,0.0
+merchant_fraud_Bauch-Blanda,0.0
+"merchant_fraud_Swaniawski, Nitzsche and Welch",0.0
+"merchant_fraud_Swaniawski, Lowe and Robel",0.0
+merchant_fraud_Bauch-Raynor,0.0
+merchant_fraud_Strosin-Cruickshank,0.0
+merchant_fraud_Baumbach Ltd,0.0
+"merchant_fraud_Baumbach, Feeney and Morar",0.0
+merchant_fraud_Tillman LLC,0.0
+merchant_fraud_Kirlin and Sons,0.0
+merchant_fraud_Friesen-Stamm,0.0
+merchant_fraud_Kilback and Sons,0.0
+merchant_fraud_Kilback LLC,0.0
+merchant_fraud_Kilback Group,0.0
+merchant_fraud_Kihn-Schuster,0.0
+merchant_fraud_Kihn-Fritsch,0.0
+merchant_fraud_Fritsch LLC,0.0
+"merchant_fraud_Kihn, Abernathy and Douglas",0.0
+merchant_fraud_Funk Group,0.0
+merchant_fraud_Kiehn-Emmerich,0.0
+merchant_fraud_Kiehn Inc,0.0
+merchant_fraud_Kessler Inc,0.0
+"merchant_fraud_Olson, Becker and Koch",0.0
+merchant_fraud_Gerlach Inc,0.0
+merchant_fraud_Gleason-Macejkovic,0.0
+"merchant_fraud_Kerluke, Kertzmann and Wiza",0.0
+"merchant_fraud_Goldner, Kovacek and Abbott",0.0
+merchant_fraud_Kerluke PLC,0.0
+merchant_fraud_Kerluke Inc,0.0
+merchant_fraud_Kemmer-Reinger,0.0
+merchant_fraud_Kemmer-Buckridge,0.0
+merchant_fraud_Goldner-Lemke,0.0
+merchant_fraud_Goodwin-Nitzsche,0.0
+merchant_fraud_Goyette Inc,0.0
+merchant_fraud_Kassulke Inc,0.0
+"merchant_fraud_Jones, Sawayn and Romaguera",0.0
+merchant_fraud_Gaylord-Powlowski,0.0
+merchant_fraud_Fadel Inc,0.0
+"merchant_fraud_Kuhic, Bins and Pfeffer",0.0
+"merchant_fraud_Fadel, Mertz and Rippin",0.0
+merchant_fraud_Kuhic Inc,0.0
+"merchant_fraud_Feil, Hilpert and Koss",0.0
+merchant_fraud_Feil-Morar,0.0
+merchant_fraud_Kris-Weimann,0.0
+merchant_fraud_Kris-Padberg,0.0
+"merchant_fraud_Ferry, Lynch and Kautzer",0.0
+merchant_fraud_Fisher Inc,0.0
+merchant_fraud_Fisher-Schowalter,0.0
+merchant_fraud_Kozey-Boehm,0.0
+"merchant_fraud_Kovacek, Dibbert and Ondricka",0.0
+merchant_fraud_Klein Group,0.0
+merchant_fraud_Flatley-Durgan,0.0
+"merchant_fraud_Koss, Hansen and Lueilwitz",0.0
+merchant_fraud_Koss and Sons,0.0
+merchant_fraud_Frami Group,0.0
+"merchant_fraud_Kohler, Lindgren and Koelpin",0.0
+merchant_fraud_Friesen Inc,0.0
+merchant_fraud_Koepp-Parker,0.0
+merchant_fraud_Friesen Ltd,0.0
+merchant_fraud_Klocko LLC,0.0
+merchant_fraud_Kling-Grant,0.0
+merchant_fraud_Kling-Ernser,0.0
+"merchant_fraud_Kling, Howe and Schneider",0.0
+merchant_fraud_Kling Inc,0.0
+merchant_fraud_Flatley Group,0.0
+"merchant_fraud_Hodkiewicz, Prohaska and Paucek",0.0
+merchant_fraud_Hirthe-Beier,0.0
+merchant_fraud_Gulgowski LLC,0.0
+"merchant_fraud_Hintz, Bauch and Smith",0.0
+merchant_fraud_Hilpert-Conroy,0.0
+merchant_fraud_Hills-Witting,0.0
+merchant_fraud_Hills-Olson,0.0
+"merchant_fraud_Gutmann, McLaughlin and Wiza",0.0
+"merchant_fraud_Hills, Hegmann and Schaefer",0.0
+merchant_fraud_Hickle Group,0.0
+"merchant_fraud_Hettinger, McCullough and Fay",0.0
+merchant_fraud_Gutmann-Upton,0.0
+"merchant_fraud_Hermiston, Russel and Price",0.0
+merchant_fraud_Johnston-Casper,0.0
+merchant_fraud_Hermann-Gaylord,0.0
+merchant_fraud_Hackett-Lueilwitz,0.0
+merchant_fraud_Halvorson Group,0.0
+merchant_fraud_Hamill-Daugherty,0.0
+merchant_fraud_Harber Inc,0.0
+merchant_fraud_Harris Group,0.0
+"merchant_fraud_Harris, Gusikowski and Heaney",0.0
+"merchant_fraud_Hauck, Dietrich and Funk",0.0
+merchant_fraud_Heidenreich PLC,0.0
+"merchant_fraud_Heathcote, Yost and Kertzmann",0.0
+merchant_fraud_Heathcote LLC,0.0
+merchant_fraud_Heaney-Marquardt,0.0
+"merchant_fraud_Hayes, Marquardt and Dibbert",0.0
+merchant_fraud_Hackett Group,0.0
+"merchant_fraud_Johnston, Nikolaus and Maggio",0.0
+"merchant_fraud_Johnson, Runolfsdottir and Mayer",0.0
+merchant_fraud_Johns-Hoeger,0.0
+"merchant_fraud_Goyette, Howell and Collier",0.0
+merchant_fraud_Goyette-Gerhold,0.0
+merchant_fraud_Jerde-Hermann,0.0
+merchant_fraud_Goyette-Herzog,0.0
+merchant_fraud_Jast-McDermott,0.0
+merchant_fraud_Jast and Sons,0.0
+merchant_fraud_Graham and Sons,0.0
+merchant_fraud_Jaskolski-Vandervort,0.0
+merchant_fraud_Jaskolski-Dibbert,0.0
+merchant_fraud_Jakubowski Inc,0.0
+merchant_fraud_Grimes LLC,0.0
+merchant_fraud_Jacobi and Sons,0.0
+"merchant_fraud_Graham, Hegmann and Hammes",0.0
+merchant_fraud_Hyatt-Blick,0.0
+"merchant_fraud_Greenfelder, Bartoletti and Davis",0.0
+merchant_fraud_Huels-Nolan,0.0
+merchant_fraud_Huels-Hahn,0.0
+"merchant_fraud_Huel, Hammes and Witting",0.0
+merchant_fraud_Huel Ltd,0.0
+merchant_fraud_Hudson-Ratke,0.0
+merchant_fraud_Greenholt Ltd,0.0
+merchant_fraud_Howe PLC,0.0
+merchant_fraud_Howe Ltd,0.0
+merchant_fraud_Hoppe-Parisian,0.0
+"merchant_fraud_Hoppe, Harris and Bednar",0.0
+merchant_fraud_Jakubowski Group,0.0
+"merchant_fraud_Moore, Dibbert and Koepp",0.0
+merchant_fraud_Deckow-O'Conner,0.0
+"merchant_fraud_Monahan, Hermann and Johns",0.0
+"merchant_fraud_Monahan, Bogisich and Ledner",0.0
+merchant_fraud_Mohr-Bayer,0.0
+merchant_fraud_Mohr Inc,0.0
+merchant_fraud_Denesik and Sons,0.0
+merchant_fraud_Miller-Hauck,0.0
+merchant_fraud_Miller-Harris,0.0
+merchant_fraud_Metz-Boehm,0.0
+"merchant_fraud_Denesik, Powlowski and Pouros",0.0
+"merchant_fraud_Medhurst, Labadie and Gottlieb",0.0
+merchant_fraud_Dibbert and Sons,0.0
+merchant_fraud_Kuhn LLC,0.0
+merchant_fraud_Medhurst Inc,0.0
+"merchant_fraud_McLaughlin, Armstrong and Koepp",0.0
+merchant_fraud_McKenzie-Huels,0.0
+merchant_fraud_McGlynn-Jaskolski,0.0
+merchant_fraud_McGlynn-Heathcote,0.0
+merchant_fraud_McDermott-Weimann,0.0
+merchant_fraud_Dickinson-Rempel,0.0
+"merchant_fraud_McDermott, Osinski and Morar",0.0
+merchant_fraud_Dietrich-Fadel,0.0
+merchant_fraud_Donnelly LLC,0.0
+merchant_fraud_Donnelly PLC,0.0
+merchant_fraud_Dooley Inc,0.0
+merchant_fraud_Dooley-Thompson,0.0
+merchant_fraud_Dicki Ltd,0.0
+merchant_fraud_Ortiz Group,0.0
+"merchant_fraud_Okuneva, Schneider and Rau",0.0
+"merchant_fraud_O'Reilly, Mohr and Purdy",0.0
+merchant_fraud_Corwin-Collins,0.0
+merchant_fraud_O'Keefe-Hudson,0.0
+merchant_fraud_O'Hara-Wilderman,0.0
+merchant_fraud_O'Connell-Ullrich,0.0
+merchant_fraud_Corwin-Gorczany,0.0
+"merchant_fraud_Cremin, Hamill and Reichel",0.0
+"merchant_fraud_Nitzsche, Kessler and Wolff",0.0
+"merchant_fraud_Crist, Jakubowski and Littel",0.0
+merchant_fraud_Crona and Sons,0.0
+merchant_fraud_Nienow PLC,0.0
+merchant_fraud_Deckow-Dare,0.0
+"merchant_fraud_Cronin, Kshlerin and Weber",0.0
+merchant_fraud_Cummerata-Hilpert,0.0
+merchant_fraud_Murray-Smitham,0.0
+merchant_fraud_Cummerata-Jones,0.0
+merchant_fraud_Cummings LLC,0.0
+merchant_fraud_Mraz-Herzog,0.0
+merchant_fraud_Dach-Borer,0.0
+"merchant_fraud_Mosciski, Gislason and Mertz",0.0
+merchant_fraud_Dach-Nader,0.0
+"merchant_fraud_Dare, Casper and Bartoletti",0.0
+merchant_fraud_Dare-Marvin,0.0
+merchant_fraud_Daugherty LLC,0.0
+merchant_fraud_Morissette LLC,0.0
+merchant_fraud_Daugherty-Thompson,0.0
+"merchant_fraud_Nicolas, Hills and McGlynn",0.0
+merchant_fraud_Larson-Moen,0.0
+"merchant_fraud_Larson, Quitzon and Spencer",0.0
+"merchant_fraud_Larkin, Stracke and Greenfelder",0.0
+merchant_fraud_Effertz LLC,0.0
+"merchant_fraud_Langworth, Boehm and Gulgowski",0.0
+"merchant_fraud_Effertz, Welch and Schowalter",0.0
+"merchant_fraud_Langosh, Wintheiser and Hyatt",0.0
+"merchant_fraud_Eichmann, Bogan and Rodriguez",0.0
+"merchant_fraud_Lakin, Ferry and Beatty",0.0
+"merchant_fraud_Labadie, Treutel and Bode",0.0
+"merchant_fraud_Eichmann, Hayes and Treutel",0.0
+merchant_fraud_Kuvalis Ltd,0.0
+merchant_fraud_Eichmann-Kilback,0.0
+merchant_fraud_Marks Inc,0.0
+merchant_fraud_Emard Inc,0.0
+merchant_fraud_Erdman-Durgan,0.0
+merchant_fraud_Erdman-Kertzmann,0.0
+merchant_fraud_Erdman-Schaden,0.0
+merchant_fraud_Ernser-Feest,0.0
+merchant_fraud_Kutch Group,0.0
+merchant_fraud_Kuphal-Toy,0.0
+merchant_fraud_Kuphal-Predovic,0.0
+merchant_fraud_Kuphal-Bartoletti,0.0
+"merchant_fraud_Kunze, Larkin and Mayert",0.0
+merchant_fraud_Kunze Inc,0.0
+merchant_fraud_Kunde-Sanford,0.0
+merchant_fraud_Kulas Group,0.0
+merchant_fraud_Kutch-Hegmann,0.0
+"merchant_fraud_Mante, Luettgen and Hackett",0.0
+merchant_fraud_Mante Group,0.0
+merchant_fraud_Maggio-Fahey,0.0
+merchant_fraud_Macejkovic-Lesch,0.0
+merchant_fraud_Lynch-Wisozk,0.0
+merchant_fraud_Lynch-Mohr,0.0
+merchant_fraud_Luettgen PLC,0.0
+merchant_fraud_Lubowitz-Walter,0.0
+"merchant_fraud_Douglas, DuBuque and McKenzie",0.0
+"merchant_fraud_Lowe, Dietrich and Erdman",0.0
+"merchant_fraud_Lockman, West and Runte",0.0
+merchant_fraud_Lockman Ltd,0.0
+merchant_fraud_Little-Gleichner,0.0
+merchant_fraud_Leannon-Nikolaus,0.0
+merchant_fraud_Little Ltd,0.0
+merchant_fraud_Lind-Buckridge,0.0
+"merchant_fraud_Lind, Huel and McClure",0.0
+"merchant_fraud_Lesch, D'Amore and Brown",0.0
+merchant_fraud_Douglas-White,0.0
+merchant_fraud_Lemke-Gutmann,0.0
+merchant_fraud_Doyle Ltd,0.0
+"merchant_fraud_Durgan, Gislason and Spencer",0.0
+"merchant_fraud_Lehner, Mosciski and King",0.0
+merchant_fraud_Durgan-Auer,0.0
+merchant_fraud_Ledner-Pfannerstill,0.0
+"merchant_fraud_Ledner, Hartmann and Feest",0.0
+merchant_fraud_Ebert-Daugherty,0.0
+merchant_fraud_Leannon-Ward,0.0
+"merchant_fraud_Little, Gutmann and Lynch",0.0

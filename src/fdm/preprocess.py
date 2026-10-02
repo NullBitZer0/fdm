@@ -9,10 +9,17 @@ Two encoding strategies are available, because one-hot is genuinely bad for
 isolate a rare merchant, and 760 dummy columns on 1M rows is a lot of width for
 very little signal:
 
-  * ``count``  — one-hot only (the original 772-feature setup)
-  * ``count+freq``     — add frequency encoding (label-free, cannot leak)
-  * ``count+target``   — add out-of-fold target encoding (strong, but see below)
-  * ``target_only``    — replace one-hot with frequency + target
+  * ``count``            — one-hot only (the original 772-feature setup)
+  * ``count+freq``       — add frequency encoding (label-free, cannot leak)
+  * ``count+target``     — add out-of-fold target encoding
+  * ``count+freq+target``— both
+  * ``target_only``      — replace one-hot with frequency + target
+
+Measured on validation, frequency encoding is worth about +0.009 PR-AUC and target
+encoding a further -0.003, so ``count+freq`` is the default. Target encoding is
+implemented and exercised because the leakage behaviour is worth demonstrating,
+but it is not enabled: it loses to a label-free alternative, and a feature built
+from the label also fails silently on any merchant unseen in training.
 
 Target encoding is built from the label, so it is fitted with strict train/test
 separation: training rows are encoded out-of-fold, and validation, test and live
@@ -39,7 +46,7 @@ from .encoding import FrequencyEncoder, TargetEncoder
 TARGET_COLUMNS = ["merchant", "state", "category"]
 FREQ_COLUMNS = list(CATEGORICAL)
 
-SCHEMES = ("count", "count+freq", "count+target", "target_only")
+SCHEMES = ("count", "count+freq", "count+target", "count+freq+target", "target_only")
 
 
 @dataclass
@@ -47,22 +54,35 @@ class Preprocessor:
     scaler: StandardScaler
     encoder: OneHotEncoder
     feature_names: list[str]
-    scheme: str = "count"
+    scheme: str = "count+freq"
     frequency: FrequencyEncoder | None = None
     target: TargetEncoder | None = None
     metadata: dict = field(default_factory=dict)
+    numeric_columns: list[str] = field(default_factory=lambda: list(NUMERIC))
 
     @classmethod
-    def fit(cls, frame: pd.DataFrame, y=None, scheme: str = "count",
+    def fit(cls, frame: pd.DataFrame, y=None, scheme: str = "count+freq",
             target_columns: list[str] | None = None,
-            target_smoothing: float = 20.0) -> "Preprocessor":
+            target_smoothing: float = 20.0,
+            numeric_columns: list[str] | None = None) -> "Preprocessor":
+        """`numeric_columns` widens the scaled block, and has to be explicit.
+
+        The behavioural features are computed into the frame, but a Preprocessor
+        built from the default NUMERIC list silently ignores them. That produced a
+        0.0000 "no gain" result once, which looked like a finding and was a bug.
+        """
         if scheme not in SCHEMES:
             raise ValueError(f"unknown scheme {scheme!r}; choose from {SCHEMES}")
 
+        numeric = list(numeric_columns or NUMERIC)
+        missing = [column for column in numeric if column not in frame.columns]
+        if missing:
+            raise KeyError(f"numeric_columns absent from the frame: {missing}")
+
         columns = target_columns or TARGET_COLUMNS
         scaler = StandardScaler()
-        scaler.fit(frame[NUMERIC])
-        names = list(NUMERIC)
+        scaler.fit(frame[numeric])
+        names = list(numeric)
 
         # Target encoding needs y; without it we fall back rather than fail, so a
         # caller that only wants a count-based preprocessor stays simple.
@@ -88,13 +108,14 @@ class Preprocessor:
 
         return cls(scaler=scaler, encoder=encoder, feature_names=names,
                    scheme=scheme, frequency=frequency, target=target,
+                   numeric_columns=numeric,
                    metadata={"target_columns": columns,
                              "target_smoothing": target_smoothing,
                              "target_prior": getattr(target, "prior_", None)})
 
     def fit_transform(self, frame: pd.DataFrame, y=None) -> sparse.csr_matrix:
         """Encode TRAINING rows. Target encoding goes strictly out-of-fold here."""
-        blocks = [sparse.csr_matrix(self.scaler.transform(frame[NUMERIC]).astype("float32"))]
+        blocks = [sparse.csr_matrix(self.scaler.transform(frame[self.numeric_columns]).astype("float32"))]
 
         if self.frequency is not None:
             blocks.append(sparse.csr_matrix(self.frequency.transform(frame)))
@@ -115,7 +136,7 @@ class Preprocessor:
 
     def transform(self, frame: pd.DataFrame) -> sparse.csr_matrix:
         """Encode validation / test / live rows. Never looks at any label."""
-        blocks = [sparse.csr_matrix(self.scaler.transform(frame[NUMERIC]).astype("float32"))]
+        blocks = [sparse.csr_matrix(self.scaler.transform(frame[self.numeric_columns]).astype("float32"))]
 
         if self.frequency is not None:
             blocks.append(sparse.csr_matrix(self.frequency.transform(frame)))

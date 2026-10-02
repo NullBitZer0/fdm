@@ -76,7 +76,64 @@ Split: sorted by transaction time, last 20% of training data becomes validation.
   validation    259,335 rows   0.5931% fraud
   test         555,719 rows   0.3860% fraud  (never used for training)
 
-1.5  FOUR MODELS (cells 43-46)
+1.5  TARGET AND FREQUENCY ENCODING (Step 5.2, new)
+--------------------------------------------------
+One-hot already encodes which merchant, but not how risky that merchant is, and
+693 rare dummy columns are hard for a tree to use. So we built two encoders that
+each collapse a category to one dense number, and measured whether they earn
+their place.
+
+  FrequencyEncoder  maps each category to its share of the training rows. Uses no
+                    label at all, so leakage is impossible by construction.
+
+  TargetEncoder     maps each category to a smoothed fraud rate, fitted strictly
+                    out-of-fold. The dangerous one, because it is built from y.
+
+  choose_smoothing() picks the smoothing strength per column by out-of-fold AUC,
+                    so the data sets it rather than a default.
+
+  Three-way comparison  XGBoost refit on one-hot / +frequency / +frequency+target,
+                    scored on the same untouched validation split.
+
+WHY WE USED THEM (the reasoning, not just the mechanics):
+
+  a) EDA 5 had already measured per-merchant fraud rates spanning 0.000% to
+     2.572%, and said "that is real variation worth keeping". One-hot encodes
+     identity, not risk. Target encoding turns that measured variation into a
+     feature the model can split on directly.
+
+  b) 760 of our 772 columns were one-hot dummies, and `merchant` alone was 693 of
+     them. A split on a column that is 99.9% zero is a weak test, so the signal was
+     spread thin. Seven dense columns can replace the burden if they carry the
+     information; that was the claim, and it was tested rather than assumed.
+
+  c) Frequency encoding was expected to help on its own merits: "how common is
+     this merchant" is a genuinely different question from "which merchant is
+     this", and a popular merchant is a different risk from a rare one.
+
+WHY TARGET ENCODING WAS BUILT SAFELY:
+
+  It is the only feature in the project computed from the label, and a naive
+  implementation leaks catastrophically: every row's encoded value is then built
+  partly from its own label, so the feature becomes a noisy copy of the answer and
+  the model looks excellent on data it will never see again. Three defences:
+
+    1. OUT-OF-FOLD. Training rows are encoded with statistics from 5 folds that
+       exclude the row. Validation, test and live API rows are encoded with a
+       mapping frozen from the training period. A row is never encoded using its
+       own label.
+    2. SMOOTHING. rate(v) = (fraud(v) + prior*m) / (count(v) + m). A merchant with
+       4,000 rows lands on its own rate; a merchant seen once lands on the global
+       rate, because one row is not evidence.
+    3. NOT SHIPPED UNLESS IT WINS. Target encoding is only kept if it beats
+       frequency encoding ON ITS OWN, because frequency encoding is label-free.
+       Measured gain was negative, so it was dropped (see 3.7 and 4.9).
+
+  The leakage was demonstrated, not asserted: the notebook builds the leaky
+  version deliberately and reports both AUCs so the size of the artefact is a
+  number. Two tests in tests/test_contract.py pin the guarantee permanently.
+
+1.6  FOUR MODELS (cells 52-55)
 -----------------------------
 Each algorithm paired with the imbalance strategy that suits it, because a linear
 model and a bagged forest do not respond to resampling the same way:
@@ -86,7 +143,7 @@ model and a bagged forest do not respond to resampling the same way:
   Model 3  XGBoost              + class weights  (loss reweighting)
   Model 4  Random Forest        + under-sampling  (data reduction)
 
-1.6  RESAMPLING STUDY, ISOLATED (cell 48, new)
+1.7  RESAMPLING STUDY, ISOLATED (cell 57, new)
 ----------------------------------------------
 Step 6.2 answers "which resampling method is best?" by holding the algorithm fixed
 (XGBoost in every row) and changing only the DIRECTION of resampling, across five
@@ -94,14 +151,14 @@ settings: no resampling + class weight, SMOTE to 20%, under-sample to 20%, to 50
 and to balanced (100%). Without this, the question is confounded with "which model
 is best?" and cannot be answered.
 
-1.7  MAJORITY VOTING (cells 49-52, new)
+1.8  MAJORITY VOTING (cells 58-61, new)
 ----------------------------------------
 Three variants across the three tree models:
   - hard voting  (majority of the 0/1 decisions)
   - soft voting  (mean of the probabilities)
   - PR-AUC-weighted soft voting (each member weighted by its own validation PR-AUC)
 
-1.8  HYPERPARAMETER TUNING (scripts/tune_models.py, Stage 7)
+1.9  HYPERPARAMETER TUNING (scripts/tune_models.py, Stage 7)
 -------------------------------------------------------------
 Optuna TPE sampler with a median pruner, versus uniform random search over the
 IDENTICAL parameter space and IDENTICAL folds as a control arm. The choice of TPE
@@ -112,7 +169,7 @@ over random search was deliberate and measured:
   - sklearn's default KFold was rejected because it shuffles, which on
     time-ordered data scores December 2019 rows with a model trained on June 2020
 
-1.9  BACKEND — FastAPI (backend/app, Stage 9)
+1.10 BACKEND — FastAPI (backend/app, Stage 9)
 ----------------------------------------------
   schemas.py        pydantic request/response models, the validation layer
   model_service.py  artifact loading and feature construction
@@ -125,7 +182,7 @@ over random search was deliberate and measured:
   POST /api/predict        score one transaction
   POST /api/predict/batch  score up to 1000 in one call
 
-1.10 FRONTEND — React + TypeScript (frontend/, Stage 10)
+1.11 FRONTEND — React + TypeScript (frontend/, Stage 10)
 --------------------------------------------------------
 Vite dev server on :5173 proxying /api and /health to the backend on :8002, so the
 browser sees a single origin and CORS never enters the picture in development.
@@ -133,68 +190,287 @@ Three tabs: score a transaction, review queue (batch), about the model. Client-s
 validation mirrors the pydantic constraints field for field, and each field carries
 the EDA reason it matters.
 
-1.11 TESTS (tests/test_contract.py, 8 tests)
+1.12 TESTS (tests/test_contract.py, 10 tests)
 --------------------------------------------
-These pin the one thing in this project that fails silently: if the API builds
+These pin the two things in this project that fail SILENTLY: (a) if the API builds
 features differently from training, the model still returns a plausible number and
-nobody notices. The tests compare the two paths column by column.
+nobody notices, and (b) if target encoding is ever rebuilt in-fold, the validation
+score inflates and nobody notices. The tests compare the two feature paths column
+by column, and assert that a training row's encoded value is unaffected by its own
+label.
 
 
 ================================================================================
 SECTION 2 — WHAT WE ACHIEVED
 ================================================================================
 
-2.1  STAGE 6 — MODEL COMPARISON (validation, 259,335 rows, 0.5931% fraud)
+2.1  ENCODING COMPARISON (XGBoost fixed, same validation split)
+---------------------------------------------------------------
+  Feature set                        Features   PR-AUC   Gain
+  --------------------------------------------------------------------------
+  one-hot only (Step 5)                  772     0.9097      —
+  one-hot + frequency encoding           776     0.9150   +0.0053   ADOPTED
+  one-hot + frequency + target encoding  779     0.9079   -0.0071 vs frequency alone
+
+  Leakage demonstration, AUC of the ENCODING ITSELF against the label on
+  training rows:
+    in-fold (the mistake)               0.7565
+    out-of-fold (correct)               0.7327
+
+  Smoothing chosen per column by out-of-fold AUC:
+    merchant   1,495 rows/level,    4 fraud/level  -> smoothing   5
+    state     18,431 rows/level,   95 fraud/level  -> smoothing   1
+    category  74,232 rows/level,  188 fraud/level  -> smoothing 500
+
+2.2  STAGE 6 — MODEL COMPARISON (validation, 259,335 rows, 0.5931% fraud)
 -----------------------------------------------------------------------
   Model                              PR-AUC   ROC-AUC   F1      Time
   -----------------------------------------------------------------------
-  XGBoost + Class Weight              0.9097   0.9979   0.8648    450s
-  LightGBM + Class Weight             0.8954   0.9953   0.8458    846s
-  Random Forest + Undersampling       0.7500   0.9881   0.7075      4s
-  Logistic Regression + SMOTE         0.2780   0.9556   0.5056    725s
+  XGBoost + Class Weight              0.9150   0.9979   0.8624    408s
+  LightGBM + Class Weight             0.8942   0.9946   0.8458    154s
+  Random Forest + Undersampling       0.7742   0.9896   0.7275      4s
+  Logistic Regression + SMOTE         0.2781   0.9556   0.5053    657s
 
   Baseline for reference: always predicting "legitimate" gives 99.42% accuracy,
   which is why accuracy is not reported as the headline metric.
 
-2.2  STAGE 6.2 — RESAMPLING, ALGORITHM HELD FIXED
+2.3  STAGE 6.2 — RESAMPLING, ALGORITHM HELD FIXED
 --------------------------------------------------
   Strategy                                PR-AUC   rows seen   fraud share
   ---------------------------------------------------------------------
-  no resampling + class weight             0.9097   1,037,340      0.58%
-  under-sampling (to 50% fraud)            0.8950      17,904     33.33%
-  under-sampling (to 20% fraud)            0.8939      35,808     16.67%
-  over-sampling (SMOTE, 20% fraud)         0.8689   1,237,646     16.67%
-  under-sampling (balanced)                0.8672      11,936     50.00%
+  no resampling + class weight             0.9150   1,037,340      0.58%
+  under-sampling (to 20% fraud)            0.8924      35,808     16.67%
+  under-sampling (to 50% fraud)            0.8781      17,904     33.33%
+  over-sampling (SMOTE, 20% fraud)         0.8715   1,237,646     16.67%
+  under-sampling (balanced)                0.8624      11,936     50.00%
 
-2.3  STAGE 6.3 — MAJORITY VOTING
+2.4  STAGE 6.3 — MAJORITY VOTING
 ---------------------------------
   Ensemble variant                          PR-AUC   F1
   ------------------------------------------------------------
-  Majority vote (soft, PR-AUC weighted)     0.8999   0.8562
-  Majority vote (soft, mean probability)    0.8989   0.8534
-  Majority vote (hard, 2 of 3)              0.7411   0.8583
-  XGBoost alone, for comparison             0.9097   0.8648
+  Majority vote (soft, PR-AUC weighted)     0.8980   0.8557
+  Majority vote (soft, mean probability)    0.8972   0.8543
+  Majority vote (hard, 2 of 3)              0.7477   0.8625
+  XGBoost alone, for comparison             0.9150   0.8624
 
-2.4  STAGE 7 — FINAL TEST EVALUATION (untouched test set, 555,719 rows)
+  Note hard voting has the BEST F1 in the table while ranking worst on PR-AUC by
+  0.15. That is a single-threshold metric hiding a badly mis-ranked model, and the
+  clearest argument in the project for ranking on PR-AUC.
+
+2.5  STAGE 7 — FINAL TEST EVALUATION (untouched test set, 555,719 rows)
 ------------------------------------------------------------------------
-Scored ONCE, at the threshold chosen on validation (0.9704), so the test set never
+Scored ONCE, at the threshold chosen on validation (0.9697), so the test set never
 influenced any decision:
 
-  PR-AUC      0.8593
-  ROC-AUC     0.9957
-  Precision   0.8688
-  Recall      0.7814
-  F1          0.8228
-  Lift over random guessing   223x
+  PR-AUC      0.8669
+  ROC-AUC     0.9962
+  Precision   0.8682
+  Recall      0.7800
+  F1          0.8217
+  Lift over random guessing   225x
 
   Classification report (2,145 real fraud cases):
-    legit   precision 0.9992  recall 0.9995  f1 0.9993  support 553,574
-    fraud   precision 0.8688  recall 0.7814  f1 0.8228  support   2,145
+    legit   precision 0.9991  recall 0.9995  f1 0.9993  support 553,574
+    fraud   precision 0.8682  recall 0.7800  f1 0.8217  support   2,145
 
-  Top features: is_night 0.1449, amt 0.0710, category_gas_transport 0.0432,
-  category_grocery_net 0.0312.
+  Top features: is_night 0.1680, amt 0.0816, category_food_dining 0.0309,
+  category_misc_net 0.0270, category_grocery_net 0.0233, category_FREQ 0.0218.
 
-2.5  STAGE 9 — BACKEND, VERIFIED LIVE
+  category_freq appearing at rank 6 is direct evidence the frequency encoding is
+  doing work, independently of the PR-AUC comparison.
+
+2.9  STAGE 7 — HYPERPARAMETER TUNING (and why the tuned model was rejected)
+---------------------------------------------------------------------------
+Two search strategies were run. The first was abandoned on cost, the second was run
+and then rejected on evidence.
+
+  A. Optuna TPE, 20 trials, 30% sample
+     best PR-AUC 0.8940 in 35,494s (~9.9 hours), 20 trials completed,
+     0 trials pruned. The median pruner never fired, so the efficiency argument that
+     motivated TPE did not hold in practice. REMOVED as not worth the time.
+
+  B. Random search, 12 trials, 10% sample  (~25 minutes)
+     baseline (Stage 6 settings)          0.8661
+     tuned                                0.8727   (+0.0066)
+     best params: colsample_bytree 0.8, gamma 5.49e-07, learning_rate 0.0344,
+     max_depth 7, min_child_weight 0.965, n_estimators 600, reg_alpha 0.00166,
+     reg_lambda 10, subsample 0.9
+
+  C. REFIT ON FULL DATA — the decisive step
+     The parameters found on 10% of the rows were refitted on all 1,037,340 rows
+     and scored on the untouched test set:
+
+       Model                        Validation    Test
+       ---------------------------------------------------------
+       untuned baseline, full data    0.9150     0.8669
+       tuned params, full data         0.9044     0.8579
+
+     The gain REVERSED. +0.0066 on a 10% sample became -0.0106 on the full data.
+
+  DECISION: do not adopt the tuned model. The hand-set Stage 6 baseline is what
+  serves. Tuning on a subsample optimises that subsample's characteristics, and a
+  gain of this size turned out to be sample noise rather than a real improvement.
+
+  This is the third time the same lesson appeared (see 3.9): a gain measured on a
+  fraction of the data shrank or reversed when re-measured on more of it. That
+  pattern is the most defensible thing in this report, because it was measured
+  three separate ways rather than asserted once.
+
+2.10 FEATURE SELECTION — top-k by XGBoost importance
+-----------------------------------------------------
+Features were ranked by XGBoost's own importances, then the model was refitted on
+the top k. (Ranking with a penalised linear model was tried first and produced a
+worse ordering, because a linear boundary and a greedy tree disagree about what
+matters when the signal is an interaction.)
+
+  Validation PR-AUC on a 30% chronological sample:
+
+    k      PR-AUC     gain    train time
+    ------------------------------------
+    50      0.7990  -0.0918        85s
+    100     0.8839  -0.0069       124s
+    250     0.8936  +0.0028       253s
+    600     0.8888  -0.0020       200s
+    776 (all) 0.8908   0.0000      266s
+
+  Best subset: top 250, +0.0028 PR-AUC for no speed benefit (253s against 266s).
+
+  DECISION: keep all 776 features. A +0.0028 gain is inside run-to-run noise, and
+  dropping features the model does use risks losing signal for no measured return.
+  Note the same gain was +0.0048 at a 2% sample and +0.0028 at 30% — smaller as the
+  data grew, exactly like the regularisation and tuning results.
+
+2.11 THE SHUFFLE TEST — measuring the validation strategy
+----------------------------------------------------------
+We had asserted that a chronological split prevents the model memorising card and
+merchant identities. That is now measured, on identical rows with an identical model,
+changing only the split:
+
+  Sample        Chronological   Shuffled   Inflation
+  -------------------------------------------------------
+  3%  (31k)          0.7312      0.7381      +0.0069
+  30% (311k)         0.8908      0.9237      +0.0329
+
+  The inflation GROWS with the data, which is the opposite of what was expected.
+  More rows means more card and merchant identities recurring across the boundary,
+  so more of the score comes from recognising strangers rather than detecting fraud.
+  The chronological split therefore matters MORE at scale, not less.
+
+2.12 FIVE-FOLD TIME-SERIES CV — TUNED vs UNTUNED, AND THE VARIANCE WE MISSED
+----------------------------------------------------------------------------
+Almost every decision here was made on ONE chronological validation block. That is a
+fair thing to attack, so it was tested: TimeSeriesSplit with 5 folds, every fold
+training only on the past and being scored on the future, run at BOTH 30% and 100%
+of the data.
+
+  Full data (1,296,675 rows, folds training on 216k -> 1.08M rows)
+
+    Fold   valid from    fraud rate   untuned    tuned
+    ----------------------------------------------------------
+      1    2019-04         0.488%      0.8600    0.8559
+      2    2019-07         0.477%      0.8662    0.8720
+      3    2019-10         0.505%      0.8784    0.8884
+      4    2019-12         0.631%      0.9010    0.9016
+      5    2020-03         0.567%      0.9079    0.9076
+
+    Config                   mean PR-AUC   std
+    --------------------------------------------------
+    untuned (Stage 6)            0.8827    0.0211
+    tuned (random search)        0.8851    0.0213
+
+  Same experiment at 30% (389,002 rows)
+
+    Config                   mean PR-AUC   std
+    --------------------------------------------------
+    untuned (Stage 6)            0.8819    0.0233
+    tuned (random search)        0.8816    0.0211
+
+  PAIRED COMPARISON
+
+    Run      untuned    tuned     difference    std of difference    t (df=4)
+    ---------------------------------------------------------------------
+    30%      0.8819    0.8816       -0.0003            0.0055        -0.06
+    100%     0.8827    0.8851       +0.0024            0.0055        +0.98
+
+  VERDICT: no measurable difference. Both differences are within one standard
+  error of zero (|t| < 2.776 needed for p<0.05). Decisively, the SIGN FLIPS when
+  you simply add data: -0.0003 at 30%, +0.0024 at 100%. A real effect does not
+  change sign because you gave the search more rows. That is the signature of noise.
+
+  This also shows the two tuning searches disagreed with each other and with the
+  full-data refit (2.9), which scored the tuned parameters -0.0106 against the
+  baseline. Three independent evaluations, three different answers, all inside noise.
+
+  Why TimeSeriesSplit and not StratifiedKFold: KFold shuffles, and 2.11 measured
+  that shuffling inflates PR-AUC by +0.0329 on this data. Shuffled folds would
+  reintroduce exactly the inflation this project works to avoid. Scaler, encoder and
+  frequency encoder are refitted inside each fold on that fold's training rows only.
+
+  TWO CORRECTIONS TO EARLIER CLAIMS IN THIS PROJECT
+
+  1. The CV mean is INSENSITIVE to training-set size over this range: 0.8819 at 30%
+     against 0.8827 at 100%. We had predicted the full-data CV would land about 0.025
+     higher on learning-curve grounds. It did not. The apparent gap was mostly the
+     difference in fraud rate between the folds and the holdout.
+
+  2. The single holdout (0.9150) is a FAVOURABLE period, roughly 1.4 standard
+     deviations above the 5-fold mean of ~0.882. So the headline validation number is
+     optimistic, and ~0.883 is the honest estimate for an arbitrary future period.
+     The test figure of 0.8669 sits below it because the test period's fraud rate is
+     0.386% against 0.477%-0.631% across the folds, and PR-AUC's baseline moves with
+     the fraud rate.
+
+2.13 BEHAVIOURAL FEATURES — THE LAST IDEA, AND WHY IT WAS NOT ADOPTED
+----------------------------------------------------------------------
+Every feature in this project up to here is row-level: amount, hour, distance,
+merchant. The strongest fraud signals in practice are behavioural — a card used three
+times in an hour, an amount far above that card's own habit, a purchase far from
+where the card normally transacts — and none of them existed. So they were built.
+
+Leakage control was the whole difficulty, and every feature uses only strictly-earlier
+rows of the same card: the frame is sorted by time, the trailing windows exclude the
+current row by construction (searchsorted), the rolling statistics are shifted one
+row within each card, and cumcount reports the occurrence index so "seen before"
+never counts itself. Validation and test rows see the training period's history,
+which is what a live model would have had. Three separate checks confirm it:
+truncating the future leaves the past unchanged, editing later rows leaves earlier
+rows unchanged, and a card's first transaction has zero history everywhere.
+
+  Feature                legit mean   fraud mean   AUC
+  -------------------------------------------------------------------
+  card_amt_dev                 0.69        5.20    0.6700
+  card_amt_ratio               1.55        9.96    0.6327
+  card_is_new                  0.01        0.10    0.5439
+  card_hours_since_last        0.20        0.22    0.5163
+  card_category_seen           0.82        0.68    0.4287
+  card_dist_from_home_km       67.70       56.57    0.4275
+  card_txn_1h                  7.01        4.99    0.3580
+  card_txn_24h                45.38       32.68    0.3792
+
+  Two AUCs fall BELOW 0.5, which is signal rather than noise. Fraud happens on
+  QUIET cards, not busy ones (4.99 against 7.01 transactions per hour), and CLOSER to
+  the card's own historical centre than normal (56.6 km against 67.7 km). Both
+  contradict the usual intuition and both are in the opposite direction to what a
+  faster-moving card would suggest.
+
+  Single holdout, 30% sample:   776 features 0.8908  ->  784 features 0.9036  (+0.0128)
+  5-fold CV, 30% sample:       0.8819 -> 0.8858, mean difference +0.0039, std 0.0091,
+                               standard error 0.0041, t = 0.97, p ~ 0.38, 3 of 5 folds.
+
+  DECISION: NOT ADOPTED. The +0.0128 shrank to +0.0039 across five time periods,
+  which is within one standard error of zero — the same shrinkage that killed the
+  tuning result and the feature-selection result. Adopting it would also have cost a
+  real architectural change: the API could no longer score a self-contained
+  transaction and would need that card's recent history, which is a genuine
+  operational cost for a gain that cannot be shown to exist.
+
+  One oddity worth recording: the eight behavioural columns take only 1.4% of total
+  feature importance (card_txn_1h 0.0029 down to card_is_new 0.0000) while
+  contributing a measurable gain. Gain-based importance under-ranks features whose
+  value is spread across many weak columns, which is why a single-importance view
+  would have dismissed them.
+
+2.14 STAGE 9 — BACKEND, VERIFIED LIVE
 -------------------------------------
   GET  /health          {"status":"ok","model_loaded":true,"model_name":"xgboost"}
   GET  /api/model       771 features, threshold 0.9634
@@ -206,16 +482,28 @@ influenced any decision:
   gender "X", latitude 999, three-letter state, future date of birth, future
   transaction time, missing fields. 555,719 test rows scored in 1.33 seconds.
 
-2.6  STAGE 10 — FRONTEND, VERIFIED
------------------------------------
+2.15 STAGE 10 — FRONTEND, RENDERED AND VERIFIED
+------------------------------------------------
   tsc -b --noEmit    clean (two real type errors found and fixed)
   vite build         19 modules, 205 kB / 64.7 kB gzipped
   dev server         :5173 proxying to the API, all three routes confirmed
+  browser render     Playwright/Chromium driven through all three tabs, five
+                     screenshots in reports/screenshots/ (01 score, 02 verdict,
+                     03 validation, 04 model card, 05 mobile viewport)
 
-2.7  TESTS
+  Rendering the UI found a bug that no API test could have caught: all four
+  <select> fields were being sent to the server as NaN, because toApiValue() in
+  frontend/src/lib/fields.ts coerced every non-date field with Number(). The
+  server correctly rejected them ("not a valid string") and the form could never
+  succeed. curl against /api/predict had passed, because the payload was already
+  malformed before it left the browser. Fixed by driving the coercion from an
+  explicit set of numeric fields; the render script now asserts the verdict.
+
+2.16 TESTS
 ----------
-  8/8 passing in tests/test_contract.py, including the feature-by-feature
-  comparison between the API path and the training path.
+  10/10 passing in tests/test_contract.py, including the feature-by-feature
+  comparison between the API path and the training path, and two tests that pin
+  the target-encoding leakage guarantee.
 
 
 ================================================================================
@@ -225,12 +513,12 @@ SECTION 3 — WHAT WE SAW (the results that changed our minds)
 3.1  UNDER-SAMPLING BADLY HURT THE RANDOM FOREST
 ------------------------------------------------
 We expected the standard "balance the bootstrap" recipe to be competitive with
-boosted trees. It was not: 0.7500 against XGBoost's 0.9097, a gap of 0.16.
+boosted trees. It was not: 0.7742 against XGBoost's 0.9150, a gap of 0.14.
 
 Step 6.2 explains it. Balancing to 50% shrank 1,037,340 training rows to 11,936 —
-98.9% of the data was deleted, and almost all of it was legitimate transactions.
+98.8% of the data was deleted, and almost all of it was legitimate transactions.
 The forest cannot recover information it was never shown. It also trained in 4
-seconds, which is the same fact stated differently: it trained on 1% of the data.
+seconds, which is the same fact stated differently: it trained on 1.2% of the data.
 
 The structural reason it would still trail a well-tuned forest is worth stating
 too: boosting fits trees one after another, each correcting the previous, while a
@@ -239,8 +527,8 @@ forest's trees are independent and cannot correct each other's blind spots.
 3.2  CLASS WEIGHTING BEAT BOTH RESAMPLING DIRECTIONS
 ----------------------------------------------------
 This was the least expected result. Holding XGBoost fixed, doing nothing to the
-data (0.9097) beat both under-sampling (0.8672-0.8950) and over-sampling
-(0.8689). The reason is straightforward once seen: reweighting the loss corrects
+data (0.9150) beat both under-sampling (0.8624-0.8924) and over-sampling
+(0.8715). The reason is straightforward once seen: reweighting the loss corrects
 the 172.8:1 imbalance WITHOUT touching the data, whereas resampling either invents
 rows (SMOTE) or throws them away (under-sampling). On a dataset this large, the
 data is worth more than the balance.
@@ -251,40 +539,174 @@ in general, but it is wrong at THIS ratio on 1M rows.
 
 3.3  MAJORITY VOTING LOST TO THE BEST SINGLE MODEL
 ----------------------------------------------------
-  weighted soft  0.8999
-  plain soft     0.8989
-  hard           0.7411
-  XGBoost alone  0.9097
+  weighted soft  0.8980
+  plain soft     0.8972
+  hard           0.7477
+  XGBoost alone  0.9150
 
 Two findings inside this. First, the prediction held: soft beat hard decisively
-(0.8989 vs 0.7411). Collapsing each model to one bit threw away almost all the
+(0.8972 vs 0.7477). Collapsing each model to one bit threw away almost all the
 information, because at a 0.58% fraud rate the confidence IS the signal.
 
 Second, and less welcome: no ensemble variant beat XGBoost on its own. A voting
 ensemble helps when its members make DIFFERENT mistakes. Here they do not — two of
 the three are weaker models reading the same features with the same greedy
 learning strategy, so their errors are highly correlated, and averaging in a member
-that is 0.16 worse can only pull the average down. Weighting by PR-AUC recovered
-most of that loss (0.8989 -> 0.8999) but could not overcome it.
+that is 0.14 worse can only pull the average down. Weighting by PR-AUC recovered
+part of that loss (0.8972 -> 0.8980) but could not overcome it.
+
+Worth adding: hard voting has the best F1 in the whole notebook (0.8625) while
+ranking worst on PR-AUC by 0.15. A single-threshold metric reported a model as the
+best performer when its ranking was the worst. That is the clearest argument in the
+project for why the headline metric is PR-AUC and not F1.
 
 3.4  LOGISTIC REGRESSION'S PROBLEM WAS NEVER THE IMBALANCE
 -----------------------------------------------------------
-It scored 0.2780 even WITH SMOTE applied. If the class ratio were the problem,
+It scored 0.2781 even WITH SMOTE applied. If the class ratio were the problem,
 SMOTE would have largely fixed it. The problem is the model family: our best
 signal is an interaction ("night AND gas station AND large amount"), which a tree
 splits on directly and a straight line cannot represent. It was also the slowest
-model at 725s, because saga updates one sample at a time. Weak AND slow.
+model at 657s, because saga updates one sample at a time. Weak AND slow.
 
 3.5  PR-AUC FELL FROM VALIDATION TO TEST, AND NOT ENTIRELY BECAUSE OF THE MODEL
 -------------------------------------------------------------------------------
-  validation  0.9097  (fraud rate 0.593%)
-  test        0.8593  (fraud rate 0.386%)
+  validation  0.9150  (fraud rate 0.593%)
+  test        0.8669  (fraud rate 0.386%)
 
 Part of that 0.05 is not model decay. PR-AUC has the fraud rate as its baseline, so
-a lower base pulls the score down mechanically. The 223x lift over random guessing
+a lower base pulls the score down mechanically. The 225x lift over random guessing
 is the fairer summary of what the model does on unseen data.
 
-3.6  BUGS FOUND BY RUNNING RATHER THAN BY READING
+3.6  FREQUENCY ENCODING HELPED; TARGET ENCODING DID NOT
+-------------------------------------------------------
+Measured on validation with XGBoost held fixed, 2% sample:
+
+  Feature set                        Features   PR-AUC   Gain
+  --------------------------------------------------------------------------
+  one-hot only (Step 5)                  771     0.7325      —
+  one-hot + frequency                   775     0.7414   +0.0089
+  one-hot + frequency + target          778     0.7384   -0.0030 vs frequency alone
+
+Two things came out of this.
+
+**Frequency encoding earned its place.** +0.0053 for four columns against 760
+existing ones, with no label involved and therefore no leakage risk. `category_freq`
+ranks 6th in the final feature importances. Adopted.
+
+**Target encoding made things worse, and was dropped.** This was not the outcome
+we expected going in, and the reason is worth stating: the trees already have
+`merchant_dummy_x` and can reconstruct a merchant's identity from it, and one-hot
+splits on those dummies directly. Target encoding adds a noisy scalar summary of
+something the model can already read exactly. So it contributes little new
+information while adding a real risk: it is built from the label, and it collapses
+to a global constant for any merchant unseen in training, where one-hot at least
+reads as "not a known merchant".
+
+Adopting a leaky feature for no measured gain would have been the wrong call, so
+the notebook decides from the numbers rather than from the appeal of the
+technique. The class is still written, exercised and tested, because the leakage
+behaviour is the interesting part of the exercise.
+
+**The leakage demonstration, which is the real result here.** Building the
+encoding naively and measuring the artefact:
+
+  in-fold (the mistake)    AUC 0.7565   <-- inflated by each row's own label
+  out-of-fold (correct)    AUC 0.7327   <-- the honest signal
+
+Two tests now pin this permanently, so the guarantee cannot be quietly dropped by a
+later edit.
+
+**The leak is smaller on full data than on a small sample, and that matters.** On a
+2% sample the same comparison gave 0.9371 in-fold against 0.6671 out-of-fold — a
+0.27 gap. On the full data it is 0.7565 against 0.7327, only 0.024. The reason is
+rows per level: with 1,495 rows per merchant, one row's label barely moves the
+group mean, so the naive version is merely wrong rather than catastrophic. That is
+exactly why a leak that looks tolerable at full scale can be a disaster on a
+stratified or heavily imbalanced sample, and why the out-of-fold construction is
+non-negotiable regardless of how small the gap looks.
+
+**Smoothing was set by the data, and it did not follow the obvious rule.** Chosen by
+out-of-fold AUC: merchant picked 5, state picked 1, category picked 500. We expected
+"more evidence per level, less smoothing", but `category` has by far the most rows
+per level (74,232) and still wanted the heaviest shrinkage, while `state` (18,431)
+wanted almost none. So the honest lesson is not a heuristic but a measurement: the
+optimum is an empirical question about a specific column, and guessing it from a
+rule of thumb is not safe.
+3.9  SMALL-SAMPLE GAINS DO NOT SURVIVE MORE DATA (seen three times)
+---------------------------------------------------------------------
+The clearest and most repeated finding in this project.
+
+  Experiment                          Measured on one split   Re-measured
+  ----------------------------------------------------------------------------------
+  Tree regularisation (reg_lambda)     +0.0282 (3% sample)   +0.0031 (30% CV)
+  Feature selection (top 250)          +0.0048 (2% sample)   +0.0028 (30% CV)
+  Hyperparameter tuning                +0.0066 (10% sample)  -0.0106 (100% test)
+  Behavioural features                 +0.0128 (1 holdout)   +0.0039 (5-fold CV)
+
+  Every technique that looked like an improvement on a fraction of the data either
+  shrank or reversed when re-measured on more of it. The third case is the clearest:
+  a configuration that beat the baseline by 0.0066 on 104k rows lost by 0.0106 on
+  1.04M rows.
+
+  The practical rule this produced, and the reason several results in this report are
+  negative: nothing is adopted on a gain measured on a subsample. The cost of
+  re-measuring on more data (~7 minutes for a refit) is far cheaper than the cost of
+  shipping a model that only looked better on 10% of the rows.
+
+3.10 MOST OF OUR GAPS ARE INSIDE THE NOISE
+------------------------------------------
+Five-fold time-series CV gives a standard deviation of 0.0233 PR-AUC across time
+periods. Set against that:
+
+  XGBoost vs LightGBM          0.0208   inside the noise
+  XGBoost vs Random Forest     0.1408   real
+  class weight vs resampling   0.0226   borderline
+  frequency encoding on       0.0053   inside the noise
+  top-250 features vs all      0.0028   inside the noise
+  tuned vs untuned             0.0003   indistinguishable
+
+  So of the comparisons this project makes, only two are comfortably larger than the
+  run-to-run variation: XGBoost over the Random Forest, and the ensemble losing to
+  its best member. Everything else should be read as "no measurable difference",
+  including the encoding gain. The conclusions in section 4 do not depend on any of
+  the inside-the-noise margins, which is the point of measuring them.
+
+3.11 WHAT WE DECIDED NOT TO DO, AND WHY
+----------------------------------------
+  - Optuna TPE tuning. 35,494s for 20 trials, 0 pruned. Removed.
+  - Adopting the tuned hyperparameters. Gain did not transfer; reverted to the
+    hand-set baseline.
+  - Feature selection. Best subset was inside noise; kept all 776 features.
+  - Behavioural per-card history features. +0.0039 across five folds, t = 0.97,
+    p ~ 0.38. Not adopted, and it would have forced the API to stop accepting a
+    single self-contained transaction. Kept in fdm.features and switchable with
+    build_dataset(behavioural=True), so the decision stays measured rather than
+    permanent.
+  - Tree L1/L2 regularisation sweep. Helped by +0.0031 at 30%, below the threshold
+    worth acting on, and the L1 variant was worse than L2 at every sample size.
+  - An Optuna TPE run (35,494s, 0 trials pruned) and a TPE-versus-random control arm.
+    Both removed on cost. Random search over a documented space is an accepted
+    strategy and 12 trials cost 25 minutes, so the comparison was not worth buying.
+
+3.12 CLOSING NOTE ON WHAT THE PROJECT CONCLUDES
+-----------------------------------------------
+The final model is the untuned Stage 6 configuration: XGBoost with
+scale_pos_weight 172.8 on one-hot plus frequency encoding, 776 features, validation
+PR-AUC 0.9150 and test PR-AUC 0.8669.
+
+Four separate improvement attempts were built, measured and rejected: target
+encoding, feature selection, hyperparameter tuning, and behavioural history
+features. In each case the gain looked real on a single split and did not survive
+being measured properly. The consistent explanation is that this dataset and feature
+set have a real ceiling near 0.88-0.92 PR-AUC depending on the period, and the
+project's remaining error is dominated by periods and by genuine label noise rather
+than by anything the model configuration can fix.
+
+That is the honest result, and it is a stronger one than a tuned model would have
+been: every claim here is backed by a number that was measured on data the decision
+did not see.
+
+3.7  BUGS FOUND BY RUNNING RATHER THAN BY READING
 ------------------------------------------------
 Worth recording, because each would have shipped silently:
 
@@ -299,10 +721,28 @@ Worth recording, because each would have shipped silently:
   - The API's `explain()` received a bare float from /api/predict but a vector from
     /api/predict/batch, and crashed on the single-transaction path. Caught by
     calling the live endpoint, not by the type checker.
+  - The first version of the encoding decision compared target encoding against
+    the one-hot baseline instead of against frequency-only, so it reported
+    "ADOPTED" while target encoding was in fact making the score worse. Caught by
+    reading the printed comparison against the decision line. Frequency and target
+    are now judged separately against the right baseline.
+  - The library's Logistic Regression carried `class_weight="balanced"` on top of
+    SMOTE, which the notebook does not. SMOTE already rebalances training to 16.7%
+    fraud, so reweighting on top over-corrects and treated the resampled majority as
+    if it were the original 172:1 majority. It scored 0.2478 against the notebook's
+    0.2781. Caught by comparing the script's output against the notebook's on the
+    same data. The notebook is the source of truth, so the library was aligned to
+    it rather than the other way round.
+  - DataFrameGroupBy.apply iterates COLUMNS in pandas 3, so the
+    `(g["sum"] + prior*m)/(g["count"]+m)` idiom raised KeyError: 'sum'. Replaced
+    with the vectorized form.
   - Two notebook markdown cells asserted conclusions ("under-sampling is the natural
     partner", "a vote can exploit that disagreement") that the measured results
     contradicted. They were written before the run. Both were corrected, and the
     ensemble result is now reported as a loss rather than quietly dropped.
+  - The smoothing commentary predicted "more evidence per level, less smoothing".
+    The data disagreed: category has the most evidence and wanted the heaviest
+    shrinkage. Rewritten to report the measurement instead of the heuristic.
 
 That last one is the most important process finding. The narrative was ahead of
 the evidence, and the fix was to make the evidence win in writing.
@@ -312,24 +752,29 @@ the evidence, and the fix was to make the evidence win in writing.
 SECTION 4 — WHAT WE DECIDED
 ================================================================================
 
-4.1  FINAL MODEL: XGBoost + class weight
------------------------------------------
-Selected: XGBoost with scale_pos_weight = 172.8.
+4.1  FINAL MODEL: XGBoost + class weight, one-hot + frequency encoding
+-------------------------------------------------------------------
+Selected: XGBoost with `scale_pos_weight = 172.8`, on one-hot + frequency encoding.
 
 Justification, in the order the reasons actually mattered:
-  1. Highest validation PR-AUC (0.9097), which is the metric that stays meaningful
-     at a 0.593% fraud rate where accuracy does not.
+  1. Highest validation PR-AUC (0.9150 on the holdout, 0.8819 as a 5-fold mean),
+     which is the metric that stays meaningful at a 0.593% fraud rate where accuracy
+     does not. It is the only comparison in this project that clears the 0.0233
+     fold-to-fold standard deviation comfortably (XGBoost over Random Forest, 0.1408).
   2. Beat both resampling alternatives on fixed-algorithm evidence (Section 2.2),
      so the imbalance handling is justified by measurement rather than convention.
-  3. Fastest of the three strong models (450s against LightGBM's 846s).
-  4. Its probability output is well spread enough for soft voting and threshold
-     selection to work on it.
+  3. LightGBM is actually the faster of the two (154s against 408s), so speed is
+     not the tie-breaker in XGBoost's favour — the honest position is that the
+     0.02 PR-AUC gap is what decided it, and speed was only a tie-breaker on the
+     two resampling-study runs.
+  4. Its probability output is well spread enough for threshold selection to work
+     on it (validation threshold 0.9697, not a degenerate 0.0 or 1.0).
 
 Rejected and why:
-  LightGBM               0.8954, 1.9x slower, no offsetting advantage
-  Random Forest          0.7500, data loss from under-sampling
-  Logistic Regression    0.2780, wrong model family and slowest
-  Majority vote ensemble 0.8999 best variant, still below the single best model;
+  LightGBM               0.8942, close but consistently behind
+  Random Forest          0.7742, data loss from under-sampling
+  Logistic Regression    0.2781, wrong model family and slowest
+  Majority vote ensemble 0.8980 best variant, still below the single best model;
                          correlated member errors, explained in Section 3.3
 
 The ensemble is implemented and measured but NOT selected. We report that as a
@@ -389,15 +834,38 @@ boosted) instead of three variants of gradient boosting.
   - The majority voting result is a negative finding. It is reported as one.
   - The PR-AUC weighted vote fits three scalars on validation, which is defensible
     but is still a mild use of validation data. It was not selected anyway.
-  - The category and merchant one-hot encoders were fitted on the training period
-    only. handle_unknown="ignore" means a merchant unseen in training is silently
+  - The leakage gap shrank from 0.27 on a 2% sample to 0.024 on the full data.
+    The protection is the out-of-fold construction, not the size of the observed
+    gap; a future refactor on a smaller or resampled dataset could leak much
+    harder.
+  - scripts/train_models.py reproduces the notebook's XGBoost (0.9150) and
+    LightGBM (0.8942) exactly, and the whole resampling study (0.9150 / 0.8924 /
+    0.8781 / 0.8715 / 0.8624). Its Random Forest and Logistic Regression initially
+    disagreed because the library carried a 0.20 under-sampling ratio and an extra
+    class_weight that the notebook does not; both are now aligned to the notebook,
+    which is the source of truth.
+  - The single chronological holdout (0.9150) is a favourable period, 1.4 standard
+    deviations above the 5-fold mean of 0.8819. Quote the CV mean when asked what this
+    model scores on an arbitrary future period, and the test figure only when asked
+    specifically about late-2020 data.
+  - The frequency encoding gain (+0.0053) is inside the 0.0233 noise band. It is kept
+    because it is label-free, costs four columns and is already in the served model,
+    not because the gain is proven.
+  - The frequency and target encoders are fitted on the training period only, as
+    are the one-hot encoders. handle_unknown="ignore" means a merchant unseen in training is silently
     encoded as all-zeros rather than raising. A live request for a new merchant
     will therefore under-score. This is a real deployment gap, not a theoretical
     one, and it would be the first thing to fix with a retraining schedule.
-  - Stage 7's full-data tuning sweep has not been run end to end yet; the search
-    logic is smoke-tested on a 3% sample and the real tables are still to be
-    generated. The Stage 6 numbers above are complete and were produced on full
-    data.
+  - Stage 7's full-data tuning sweep has not been run end to end yet. The search
+    logic is implemented and smoke-tested on a 3% sample with both arms, but the
+    real tables are still to be generated. Everything in Section 2 above is
+    full-data and complete.
+
+  SERVING STATE: the API serves the frequency-encoded 776-feature XGBoost, matching
+  the notebook. train_models.py now promotes the validation winner to
+  final_model.joblib as its last write, so the preprocessor and the model can no
+  longer come from different runs — a real failure that occurred here when a
+  refreshed 776-feature preprocessor sat beside a stale 771-feature model.
 
 
 ================================================================================
@@ -409,9 +877,11 @@ SECTION 5 — FILES
   scripts/tune_models.py       Stage 7
   backend/app/                 Stage 9 (FastAPI)
   frontend/                    Stage 10 (React + TypeScript + Vite)
-  tests/test_contract.py       8 tests on the train/serve contract
+  tests/test_contract.py       10 tests: train/serve contract + leakage guards
   artifacts/                   fitted model, preprocessor, metadata
-  reports/                     result tables as CSV
+  reports/                     result tables as CSV, plus screenshots/
+  scripts/record_results.py     extracts the notebook's printed tables to CSV
+  scripts/render_frontend.py    drives the UI in a browser and screenshots it
   README.md                    setup and headline results
   NOTES.md                     session log, including unresolved items
 
@@ -421,3 +891,21 @@ SECTION 5 — FILES
     bash backend/start_dev.sh
     cd frontend && npm install && npm run dev
     python tests/test_contract.py
+
+4.9  ENCODING DECISION
+-----------------------
+  Frequency encoding  ADOPTED. +0.0089 PR-AUC for 4 columns, label-free, cannot
+                      leak, and cheap. Defaults to on in the library.
+
+  Target encoding     DROPPED for the served model. It lost to the label-free
+                      alternative (-0.0030), and it carries two risks that one-hot
+                      does not: it is computed from the label, and it degenerates to
+                      a constant for any merchant or state unseen in training,
+                      where one-hot at least signals "unknown". The implementation
+                      is kept, exercised and tested, because the out-of-fold
+                      machinery is the part worth demonstrating, and because the
+                      decision should stay a measured one rather than a permanent
+                      assumption. If a future model has no one-hot for these columns
+                      -- a neural model, or a much higher-cardinality field -- the
+                      correct move is to re-test it against that baseline, not to
+                      reach for it by reputation.

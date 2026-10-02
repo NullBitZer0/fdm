@@ -1,2 +1,0 @@
-model,strategy,best_pr_auc,trials,completed,pruned,seconds
-xgboost,RandomizedSearchCV-style uniform sampling,0.6695,2,2,0,336.3

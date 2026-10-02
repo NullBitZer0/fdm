@@ -1,0 +1,33 @@
+
+==============================================================================
+Feature selection and regularisation study
+==============================================================================
+train 311,201 rows | validation 77,801 rows | 776 features | imbalance 171.2:1
+
+==============================================================================
+Confirmation run: the small-sample winners, re-tested on more data
+==============================================================================
+  311,201 training rows, 776 validation rows, 776 features
+  (previous run used a smaller sample)
+
+==============================================================================
+A. Does the shuffled split still inflate the score?
+==============================================================================
+  chronological split  PR-AUC 0.8908
+  shuffled split       PR-AUC 0.9237
+  inflation from shuffling: +0.0329
+
+  The shuffled split puts the same cards and merchants on both sides of the
+  boundary, so the model can memorise identities instead of learning fraud.
+  That is why every number in this project comes from the time-based split.
+
+==============================================================================
+B. Tree L2 (reg_lambda), the leading candidate
+==============================================================================
+  baseline (reg_lambda=1)  PR-AUC 0.8908
+   reg_alpha  reg_lambda    PR-AUC      gain
+         0.0         1.0    0.8908   +0.0000
+         0.0        10.0    0.8939   +0.0031
+         1.0         1.0    0.8962   +0.0054
+         1.0        10.0    0.8932   +0.0024
+         5.0        10.0    0.8941   +0.0033

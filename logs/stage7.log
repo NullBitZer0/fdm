@@ -1,0 +1,72 @@
+
+==============================================================================
+Stage 7 - hyperparameter tuning
+==============================================================================
+train 389,002 rows  fraud 0.5874%
+test  166,716 rows  fraud 0.3839%
+train: 389,002 -> 389,002 rows | bad dates 0 | duplicates 0 | bad amount 0 | bad coordinates 0 | gaps filled 0
+test: 166,716 -> 166,716 rows | bad dates 0 | duplicates 0 | bad amount 0 | bad coordinates 0 | gaps filled 0
+
+     split   rows  fraud_rate              starts                ends
+     train 311201    0.005807 2019-01-01 00:00:18 2020-03-06 14:32:53
+validation  77801    0.006144 2020-03-06 14:42:45 2020-06-21 12:13:36
+      test 166716    0.003839 2020-06-21 12:14:53 2020-12-31 23:59:34
+
+X_train   311,201 rows x 776 features, 2.577% dense
+X_valid   77,801 rows x 776 features, 2.577% dense
+X_test    166,716 rows x 776 features, 2.577% dense
+features  776 (12 numeric + 764 one-hot)
+
+imbalance 171.2:1 | training on 311,201 rows, scoring on 77,801 validation rows
+TimeSeriesSplit folds: [(62241, 62240), (124481, 62240)] ... (folds are strictly later in time than their training data)
+
+==============================================================================
+xgboost / tpe
+==============================================================================
+  [xgboost] trial   1/20  done   best so far PR-AUC 0.8683
+  [xgboost] trial   2/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   3/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   4/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   5/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   6/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   7/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   8/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial   9/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial  10/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial  11/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial  12/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial  13/20  done   best so far PR-AUC 0.8917
+  [xgboost] trial  14/20  done   best so far PR-AUC 0.8940
+  [xgboost] trial  15/20  done   best so far PR-AUC 0.8940
+  [xgboost] trial  16/20  done   best so far PR-AUC 0.8940
+  [xgboost] trial  17/20  done   best so far PR-AUC 0.8940
+  [xgboost] trial  18/20  done   best so far PR-AUC 0.8940
+  [xgboost] trial  19/20  done   best so far PR-AUC 0.8940
+  [xgboost] trial  20/20  done   best so far PR-AUC 0.8940
+
+best PR-AUC 0.8940 in 35494s (20 completed, 0 pruned)
+{
+  "n_estimators": 900,
+  "learning_rate": 0.051906664968674646,
+  "max_depth": 11,
+  "min_child_weight": 6.1291672003077995,
+  "subsample": 0.6630099011800062,
+  "colsample_bytree": 0.5939987970637234,
+  "gamma": 1.527157274968516e-07,
+  "reg_alpha": 8.568417166949506e-07,
+  "reg_lambda": 1.312798415090222
+}
+
+==============================================================================
+xgboost / random
+==============================================================================
+  [xgboost] trial   1/20  done   best so far PR-AUC 0.8635
+  [xgboost] trial   2/20  done   best so far PR-AUC 0.8785
+  [xgboost] trial   3/20  done   best so far PR-AUC 0.8916
+  [xgboost] trial   4/20  done   best so far PR-AUC 0.8916
+  [xgboost] trial   5/20  done   best so far PR-AUC 0.8916
+  [xgboost] trial   6/20  done   best so far PR-AUC 0.8916
+  [xgboost] trial   7/20  done   best so far PR-AUC 0.8916
+  [xgboost] trial   8/20  done   best so far PR-AUC 0.8935
+  [xgboost] trial   9/20  done   best so far PR-AUC 0.8935
+  [xgboost] trial  10/20  done   best so far PR-AUC 0.8935

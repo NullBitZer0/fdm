@@ -92,6 +92,96 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+BEHAVIOURAL = ["card_txn_1h", "card_txn_24h", "card_amt_ratio", "card_amt_dev",
+               "card_hours_since_last", "card_dist_from_home_km", "card_category_seen"]
+
+_HOUR_NS = 3600 * 10**9
+_DAY_NS = 24 * _HOUR_NS
+
+
+def _trailing_counts(times_ns: np.ndarray, positions: np.ndarray, window_ns: int) -> np.ndarray:
+    """How many of `positions` fall in the `window_ns` strictly BEFORE each one.
+
+    Computed with searchsorted rather than pandas rolling, for two reasons. First,
+    pandas groupby.rolling returns a (card, timestamp) MultiIndex that cannot be
+    aligned back onto the frame's positional index. Second, searchsorted makes the
+    "strictly before" rule explicit instead of leaving it to `closed=` semantics.
+    """
+    ordered = times_ns[positions]                 # positions are already time-sorted
+    left = np.searchsorted(ordered, ordered - window_ns, side="left")
+    return np.arange(len(ordered)) - left         # excludes the current row
+
+
+def add_behavioural_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Add per-card behavioural features computed from STRICTLY PAST transactions.
+
+    Everything else in this project is row-level: amount, hour, distance, merchant.
+    The strongest fraud signals in practice are behavioural -- a card used three
+    times in an hour, an amount far above that card's own habit, a purchase nowhere
+    near where the card normally transacts -- and none of them exist yet.
+
+    Leakage control is the whole difficulty. Every feature below uses only rows that
+    occur BEFORE the row being scored:
+
+      * the frame is sorted by transaction time first
+      * the two trailing windows exclude the current row by construction
+      * rolling statistics are shifted by one row within each card
+      * cumcount() reports the occurrence index, so "seen before" never counts itself
+
+    A validation or test row therefore sees the history a real model would have had
+    at that moment, which is exactly the history a live request would need too.
+
+    The cost is a serving contract change: these features cannot be computed from a
+    single transaction, because they need that card's recent history.
+    """
+    df = df.sort_values("trans_date_trans_time", kind="mergesort").copy()
+    times = df["trans_date_trans_time"]
+    times_ns = times.astype("int64").to_numpy()
+    n = len(df)
+
+    txn_1h = np.zeros(n, dtype="float32")
+    txn_24h = np.zeros(n, dtype="float32")
+    for positions in df.groupby("cc_num", sort=False).indices.values():
+        positions = np.sort(positions)
+        txn_1h[positions] = _trailing_counts(times_ns, positions, _HOUR_NS)
+        txn_24h[positions] = _trailing_counts(times_ns, positions, _DAY_NS)
+    df["card_txn_1h"] = txn_1h
+    df["card_txn_24h"] = txn_24h
+
+    # How unusual this amount is FOR THIS CARD rather than for the population.
+    # transform() keeps the result aligned to the frame, which groupby.rolling does not.
+    grouped = df.groupby("cc_num", sort=False)["amt"]
+    median = grouped.transform(lambda s: s.rolling(50, min_periods=10).median().shift(1))
+    mean = grouped.transform(lambda s: s.rolling(50, min_periods=10).mean().shift(1))
+    std = grouped.transform(lambda s: s.rolling(50, min_periods=10).std().shift(1))
+    df["card_amt_ratio"] = (df["amt"] / median.replace(0, np.nan)).to_numpy()
+    df["card_amt_dev"] = ((df["amt"] - mean).abs() / std.replace(0, np.nan)).to_numpy()
+
+    # dormancy: a card quiet for months and then used is worth noticing
+    df["card_hours_since_last"] = (times.diff().dt.total_seconds() / 3600.0).to_numpy()
+
+    # "home" location: the median of this card's past transactions. Distance from it
+    # compares against where THIS CARD behaves, which is a sharper signal than the
+    # distance from the cardholder's registered city.
+    home_lat = df.groupby("cc_num", sort=False)["merch_lat"].transform(
+        lambda s: s.rolling(50, min_periods=10).median().shift(1))
+    home_long = df.groupby("cc_num", sort=False)["merch_long"].transform(
+        lambda s: s.rolling(50, min_periods=10).median().shift(1))
+    df["card_dist_from_home_km"] = haversine_km(home_lat, home_long,
+                                                df["merch_lat"], df["merch_long"])
+
+    # has this card ever used this category before? cumcount is 0 on first sight
+    df["card_category_seen"] = (df.groupby(["cc_num", "category"], sort=False)
+                                .cumcount() > 0).astype(int).to_numpy()
+
+    # No history yet: neutral values, plus a flag so the model can tell "a quiet
+    # card" apart from "a card we have never seen".
+    df["card_is_new"] = (txn_24h == 0).astype(int)
+    for column in BEHAVIOURAL:
+        df[column] = df[column].replace([np.inf, -np.inf], np.nan).fillna(0.0)
+    return df.reset_index(drop=True)
+
+
 def load_frames(sample_frac: float = 1.0, seed: int = 42, verbose: bool = True):
     """Load both CSVs, optionally subsample while keeping time order."""
     train = pd.read_csv(DATA_DIR / "fraudTrain.csv", index_col=0)

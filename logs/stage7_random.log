@@ -1,0 +1,70 @@
+
+==============================================================================
+Stage 7 - random search hyperparameter tuning
+==============================================================================
+train 129,668 rows  fraud 0.5961%
+test  55,572 rows  fraud 0.3887%
+train: 129,668 -> 129,668 rows | bad dates 0 | duplicates 0 | bad amount 0 | bad coordinates 0 | gaps filled 0
+test: 55,572 -> 55,572 rows | bad dates 0 | duplicates 0 | bad amount 0 | bad coordinates 0 | gaps filled 0
+
+     split   rows  fraud_rate              starts                ends
+     train 103734    0.005919 2019-01-01 00:04:08 2020-03-06 11:27:56
+validation  25934    0.006131 2020-03-06 11:32:37 2020-06-21 12:13:36
+      test  55572    0.003887 2020-06-21 12:14:53 2020-12-31 23:57:50
+
+X_train   103,734 rows x 775 features, 2.581% dense
+X_valid   25,934 rows x 775 features, 2.581% dense
+X_test    55,572 rows x 775 features, 2.581% dense
+features  775 (12 numeric + 763 one-hot)
+
+103,734 training rows, 25,934 validation rows, 775 features, imbalance 167.9:1
+scored on the same chronological validation block as Stage 6 (no shuffling, no KFold)
+
+baseline PR-AUC 0.8661  (193s)
+
+==============================================================================
+random search, 12 trials
+==============================================================================
+  trial   1/12  PR-AUC 0.6622  (54s)  best so far 0.6622
+  trial   2/12  PR-AUC 0.7511  (34s)  best so far 0.7511
+  trial   3/12  PR-AUC 0.8444  (224s)  best so far 0.8444
+  trial   4/12  PR-AUC 0.8622  (82s)  best so far 0.8622
+  trial   5/12  PR-AUC 0.8727  (269s)  best so far 0.8727
+  trial   6/12  PR-AUC 0.5276  (26s)  best so far 0.8727
+  trial   7/12  PR-AUC 0.8023  (62s)  best so far 0.8727
+  trial   8/12  PR-AUC 0.8092  (113s)  best so far 0.8727
+  trial   9/12  PR-AUC 0.8563  (95s)  best so far 0.8727
+  trial  10/12  PR-AUC 0.8709  (170s)  best so far 0.8727
+  trial  11/12  PR-AUC 0.8569  (88s)  best so far 0.8727
+  trial  12/12  PR-AUC 0.7271  (104s)  best so far 0.8727
+
+==============================================================================
+tuned versus baseline
+==============================================================================
+                      model  pr_auc  roc_auc     f1   gain  seconds
+baseline (Stage 6 settings)  0.8661   0.9935 0.8345 0.0000    193.4
+      tuned (random search)  0.8727   0.9955 0.8267 0.0066      0.0
+
+best parameters:
+  colsample_bytree   0.8
+  gamma              5.4928e-07
+  learning_rate      0.0344457
+  max_depth          7
+  min_child_weight   0.965349
+  n_estimators       600
+  reg_alpha          0.00165723
+  reg_lambda         10
+  subsample          0.9
+
+==============================================================================
+final check on the untouched test set
+==============================================================================
+       model  pr_auc  roc_auc  threshold  precision  recall     f1  tp  fp  fn
+tuned (test)  0.8482   0.9944     0.8685     0.8218  0.7685 0.7943 166  36  50
+
+==============================================================================
+artifacts
+==============================================================================
+wrote final_model.joblib (XGBoost + Class Weight (tuned)), preprocessor.joblib and model_metadata.json
+
+VERDICT: tuning helped (gain +0.0066)

@@ -50,9 +50,17 @@ def undersample(random_state: int = SEED, sampling_strategy: float = 0.20):
 # ── base estimators ─────────────────────────────────────────────────────────
 
 def logistic_regression(imbalance: float, seed: int = SEED, max_iter: int = 300):
+    """No class_weight here, deliberately.
+
+    SMOTE already rebalances the training set to 16.7% fraud, so adding
+    class_weight="balanced" on top of that over-corrects: the model would treat
+    the resampled majority as if it were the original 172:1 majority. The
+    notebook's Model 1 is SMOTE alone, and this matches it. Adding class_weight
+    measurably lowered PR-AUC (0.2478 vs 0.2781 on validation), which is why it
+    is not used.
+    """
     return LogisticRegression(
-        solver="saga", max_iter=max_iter, tol=1e-3, C=1.0,
-        class_weight="balanced", random_state=seed)
+        solver="saga", max_iter=max_iter, tol=1e-3, C=1.0, random_state=seed)
 
 
 def random_forest(imbalance: float, seed: int = SEED, n_estimators: int = 300,
@@ -133,7 +141,10 @@ def build_models(imbalance: float, seed: int = SEED) -> dict[str, Pipeline]:
             ("model", logistic_regression(imbalance, seed)),
         ]),
         "Random Forest + Undersampling": ImbPipeline([
-            ("resample", undersample(seed)),
+            # sampling_strategy=1.0 = fully balanced, which is what the notebook's
+            # Model 4 uses. The undersample() default is 0.20, which is a different
+            # (and gentler) experiment, so the value is explicit here.
+            ("resample", undersample(seed, 1.0)),
             ("model", random_forest(imbalance, seed)),
         ]),
         "XGBoost + Class Weight": Pipeline([("model", xgboost(imbalance, seed))]),

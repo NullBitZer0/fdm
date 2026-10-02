@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "backend"))
 
-from fdm.config import CATEGORICAL, NUMERIC  # noqa: E402
+from fdm.config import CATEGORICAL, NUMERIC, SEED  # noqa: E402
 from fdm.features import add_features, clean, haversine_km  # noqa: E402
 from fdm.preprocess import Preprocessor  # noqa: E402
 
@@ -122,7 +122,8 @@ def test_preprocessor_roundtrip_and_unknown_categories():
     matrix = preprocessor.transform(train)
 
     assert matrix.shape == (40, len(preprocessor.feature_names))
-    assert matrix.shape[1] == len(NUMERIC) + 40 + 2 + 40 + 40
+    # 12 numeric + 4 frequency + (40 category + 2 gender + 40 state + 40 merchant)
+    assert matrix.shape[1] == len(NUMERIC) + 4 + 40 + 2 + 40 + 40
     # Sparse output must stay sparse: 772 columns at 1M rows is only viable if so.
     assert matrix.nnz < matrix.shape[0] * matrix.shape[1]
 
@@ -142,8 +143,11 @@ def test_feature_order_is_stable():
     train = _prepared(10)
     preprocessor = Preprocessor.fit(train)
     assert preprocessor.feature_names[:len(NUMERIC)] == NUMERIC
+    # every one-hot block must still be present and after the derived columns
     for column in CATEGORICAL:
         assert any(name.startswith(f"{column}_") for name in preprocessor.feature_names)
+    names = preprocessor.feature_names
+    assert names[len(NUMERIC)] == "category_freq", names[len(NUMERIC)]
 
 
 def test_api_and_training_produce_identical_features():
@@ -192,6 +196,67 @@ def test_schema_rejects_bad_input():
         except ValidationError:
             continue
         raise AssertionError(f"schema accepted invalid input: {patch}")
+
+
+def test_target_encoding_never_sees_its_own_label():
+    """The property that must never regress: no training row contributes to its own
+    target-encoded feature.
+
+    Built two ways on the same data. The in-fold version is the mistake, and it
+    scores far higher -- which is exactly why it must not ship.
+    """
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import roc_auc_score
+    from fdm.encoding import TargetEncoder
+
+    frame = _distinct_raw(4000)
+    # give each level a genuinely different fraud rate so the encoding has signal
+    y = (np.arange(len(frame)) % 37 == 0).astype(int)
+    for index, row in frame.iterrows():
+        if row["merchant"] in {"merchant_0", "merchant_1"}:
+            y[index] = 1
+    frame["is_fraud"] = y
+
+    leaky = TargetEncoder(["merchant"], smoothing=1.0).fit(frame, y).transform(frame)
+    honest = TargetEncoder(["merchant"], smoothing=1.0).fit_transform(frame, y)
+
+    leaky_auc = roc_auc_score(y, leaky)
+    honest_auc = roc_auc_score(y, honest)
+    assert leaky_auc > honest_auc + 0.05, (leaky_auc, honest_auc)
+
+    # The frozen mapping used for unseen data must be independent of any new label.
+    fresh = _distinct_raw(1)
+    before = TargetEncoder(["merchant"], smoothing=20.0).fit(frame, y).transform(fresh)
+    assert not np.isnan(before).any(), before
+
+
+def test_target_encoding_is_out_of_fold_per_row():
+    """Changing one row's label must not change that row's own encoded value."""
+    from fdm.encoding import TargetEncoder
+
+    frame = _distinct_raw(500)
+    y = np.zeros(len(frame), dtype=int)
+    y[:25] = 1
+    frame["is_fraud"] = y
+
+    flipped = y.copy()
+    flipped[0] = 1 - flipped[0]
+
+    encoder = TargetEncoder(["merchant"], smoothing=5.0, n_splits=5, random_state=SEED)
+    first = encoder.fit_transform(frame, y).copy()
+    second = encoder.fit_transform(frame, flipped)
+    oof_drift = abs(float(first[0, 0]) - float(second[0, 0]))
+
+    # The naive in-fold version, for contrast: row 0's group mean moves directly.
+    naive_drift = abs(float(TargetEncoder(["merchant"], smoothing=5.0)
+                            .fit(frame, y).transform(frame)[0, 0])
+                      - float(TargetEncoder(["merchant"], smoothing=5.0)
+                              .fit(frame, flipped).transform(frame)[0, 0]))
+
+    # Out-of-fold, row 0's own label only moves the folds' prior, so the drift is
+    # tiny. In-fold it moves the group's own rate, so the drift is orders larger.
+    assert oof_drift < 0.005, oof_drift
+    assert naive_drift > oof_drift * 10, (oof_drift, naive_drift)
 
 
 def _run_all() -> int:
